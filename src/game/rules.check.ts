@@ -1,6 +1,6 @@
 // Tự kiểm tra luật chơi: npx tsx src/game/rules.check.ts
 import assert from 'node:assert';
-import { Guests, parseCommand, pollCandidate } from './rules';
+import { Guests, parseCommand, pollCandidate, Titles } from './rules';
 
 assert.equal(parseCommand('Bưng Mâm!!'), 'tray');
 assert.equal(parseCommand('bung mam'), 'tray');
@@ -37,4 +37,25 @@ assert.equal(pollCandidate('xinh ghê'), null);
 assert.equal(pollCandidate('chúc mừng'), null);
 assert.equal(pollCandidate('có'), null);
 assert.equal(pollCandidate('Hồng Phúc'), 'Hồng Phúc');
+const T = new Titles({
+  leaders: [
+    { key: 'coins', name: 'VIP' },
+    { key: 'zo', name: 'Tiếp rượu' },
+  ],
+  milestones: [{ key: 'zo', min: 1, name: 'Nhậu' }],
+  minToLead: 2,
+  bouquet: 'Bắt hoa',
+});
+assert.equal(T.add('a', 'zo').promoted, null); // 1 lần chưa đủ lên chức
+assert.deepEqual(T.titleOf('a'), { text: 'Nhậu', gold: false });
+assert.deepEqual(T.add('a', 'zo').promoted, { id: 'a', title: 'Tiếp rượu' });
+T.add('b', 'zo');
+T.add('b', 'zo'); // bằng a: chưa vượt
+assert.deepEqual(T.titleOf('a'), { text: 'Tiếp rượu', gold: true });
+const r = T.add('b', 'zo'); // b vượt a
+assert.deepEqual(r.promoted, { id: 'b', title: 'Tiếp rượu' });
+assert.ok(r.changed.includes('a'));
+assert.deepEqual(T.titleOf('a'), { text: 'Nhậu', gold: false });
+T.caught('c');
+assert.deepEqual(T.titleOf('c'), { text: 'Bắt hoa', gold: false });
 console.log('rules ok');

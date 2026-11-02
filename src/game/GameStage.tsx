@@ -76,7 +76,7 @@ export function GameStage({ game }: { game: GameState }) {
         <span className="dc-guide-h">Gõ:</span>
         <span className="dc-chip">🍲 BƯNG MÂM</span>
         <span className="dc-chip">📸 CHỤP HÌNH</span>
-        <span className="dc-chip">🥂 DZÔ</span>
+        <span className="dc-chip">🥂 ZÔ</span>
         <span className="dc-chip">💃 QUẨY</span>
       </div>
 

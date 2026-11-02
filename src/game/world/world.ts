@@ -49,6 +49,7 @@ interface Guest {
   seat: { t: Table; i: number } | null;
   slot: number; // vị trí trong hàng chờ chụp hình, -1 = không xếp
   nameCv: HTMLCanvasElement | null; // khách đệm (npc) không có tên
+  title: { text: string; gold: boolean } | null;
   avatar: HTMLImageElement | null;
   bubble: { cv: HTMLCanvasElement; until: number } | null;
   lastActive: number;
@@ -112,6 +113,7 @@ function makeGuest(id: string, look: Look, x: number, y: number, npc: boolean): 
     seat: null,
     slot: -1,
     nameCv: null,
+    title: null,
     avatar: null,
     bubble: null,
     lastActive: 0,
@@ -309,7 +311,7 @@ class World {
       g.lastActive = Date.now();
       if (g.name !== name) {
         g.name = name;
-        g.nameCv = nameTag(name, g.avatar);
+        g.nameCv = nameTag(name, g.avatar, undefined, g.title);
       }
       if (g.leaving) {
         g.leaving = false;
@@ -334,11 +336,20 @@ class World {
       const guest = g;
       img.onload = () => {
         guest.avatar = img;
-        guest.nameCv = nameTag(guest.name, img);
+        guest.nameCv = nameTag(guest.name, img, undefined, guest.title);
       };
       img.src = avatarUrl;
     }
     return g;
+  }
+
+  /** Danh hiệu trên tên khách (null = bỏ) */
+  setTitle(id: string, title: { text: string; gold: boolean } | null) {
+    const g = this.guests.get(id);
+    if (!g || g.title?.text === title?.text) return;
+    g.title = title;
+    g.nameCv = nameTag(g.name, g.avatar, undefined, title);
+    if (title?.gold) this.hearts(g.x, g.y - 120, 6);
   }
 
   has(id: string) {
@@ -461,7 +472,7 @@ class World {
         face,
         start: () => {
           this.tableGlow.set(seat.t, 1);
-          this.floatText(p.x, p.y - 90, 'Dô!', '#be123c');
+          this.floatText(p.x, p.y - 90, 'Zô!', '#be123c');
         },
       });
     g.plan.push({
@@ -1003,7 +1014,7 @@ class World {
     for (const g of this.guests.values()) {
       let pose: Pose = g.pose;
       if (danceAll && g.task !== 'photo' && g.task !== 'tray') pose = g.seat ? 'cheer' : 'dance';
-      const showName = !g.npc && (crowd < 70 || now - g.lastActive < 90_000 || g.task === 'photo' || g.task === 'queue');
+      const showName = !g.npc && (crowd < 70 || !!g.title?.gold || now - g.lastActive < 90_000 || g.task === 'photo' || g.task === 'queue');
       ds.push({ y: g.y, f: () => this.drawPerson(ctx, g, pose, g.facing, scaleAt(g.y), showName) });
     }
     ds.push(...this.pets.drawables(ctx));
@@ -1137,32 +1148,54 @@ function heart(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, c
 }
 
 // Bảng tên vẽ sẵn 1 lần (gấp đôi độ nét), có avatar tròn bên trái nếu có. Mỗi khung hình chỉ dán ảnh.
-function nameTag(name: string, avatar: HTMLImageElement | null, color = '#7a2e43') {
+function nameTag(name: string, avatar: HTMLImageElement | null, color = '#7a2e43', title: { text: string; gold: boolean } | null = null) {
   const short = name.length > 16 ? name.slice(0, 15) + '…' : name;
   const cv = document.createElement('canvas');
   const c = cv.getContext('2d')!;
   const font = '700 44px "Be Vietnam Pro", sans-serif';
+  const tFont = '800 32px "Be Vietnam Pro", sans-serif';
   c.font = font;
   const av = avatar ? 60 : 0;
-  const w = Math.ceil(c.measureText(short).width) + 40 + av;
+  const nameW = Math.ceil(c.measureText(short).width) + 40 + av;
+  c.font = tFont;
+  const titleW = title ? Math.ceil(c.measureText(title.text).width) + 36 : 0;
+  const w = Math.max(nameW, titleW);
+  const th = title ? 48 : 0; // dải danh hiệu phía trên tên
   cv.width = w;
-  cv.height = 68;
-  c.font = font;
-  roundRect(c, 2, 4, w - 4, 60, 30);
+  cv.height = 68 + th;
+  if (title) {
+    const tx = (w - titleW) / 2;
+    roundRect(c, tx + 2, 2, titleW - 4, 42, 21);
+    if (title.gold) {
+      const g = c.createLinearGradient(tx, 0, tx + titleW, 0);
+      g.addColorStop(0, '#f6c453');
+      g.addColorStop(1, '#e8913a');
+      c.fillStyle = g;
+    } else c.fillStyle = '#f49ab2';
+    c.fill();
+    c.font = tFont;
+    c.fillStyle = title.gold ? '#5a2a10' : '#ffffff';
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.fillText(title.text, w / 2, 24);
+  }
+  const nx = (w - nameW) / 2;
+  roundRect(c, nx + 2, th + 4, nameW - 4, 60, 30);
   c.fillStyle = 'rgba(255,255,255,0.9)';
   c.fill();
   if (avatar) {
     c.save();
     c.beginPath();
-    c.arc(34, 34, 26, 0, Math.PI * 2);
+    c.arc(nx + 34, th + 34, 26, 0, Math.PI * 2);
     c.clip();
-    c.drawImage(avatar, 8, 8, 52, 52);
+    c.drawImage(avatar, nx + 8, th + 8, 52, 52);
     c.restore();
   }
+  c.font = font;
   c.fillStyle = color;
   c.textAlign = 'center';
   c.textBaseline = 'middle';
-  c.fillText(short, av + (w - av) / 2, 36);
+  c.fillText(short, nx + av + (nameW - av) / 2, th + 36);
   return cv;
 }
 

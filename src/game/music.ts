@@ -7,9 +7,13 @@ const SRC = '/assets/audio/nhac-nen-dam-cuoi.m4a';
 const LOUD = 0.55; // lúc MC im
 const DUCK = 0.25; // lúc MC đang nói
 
+const LEVEL_KEY = 'damcuoi-music-level';
+
 class Music {
   private el: HTMLAudioElement | null = null;
   on = true;
+  // hệ số âm lượng chỉnh ở trang điều khiển: 1 = mặc định, 0.5 = nửa, 2 = gấp đôi (tối đa tới 100% âm lượng)
+  level = readLevel();
 
   start() {
     if (!IS_STAGE || this.el) return;
@@ -26,10 +30,19 @@ class Music {
     window.addEventListener('pointerdown', tryPlay);
     // âm lượng trượt mượt về mức đích
     setInterval(() => {
-      const target = !this.on ? 0 : voice.busy ? DUCK : LOUD;
+      const target = !this.on ? 0 : Math.min(1, (voice.busy ? DUCK : LOUD) * this.level);
       el.volume = Math.max(0, Math.min(1, el.volume + (target - el.volume) * 0.35));
       if (!this.on && el.volume < 0.01) el.pause();
     }, 100);
+  }
+
+  setLevel(level: number) {
+    this.level = Math.max(0, Math.min(2, level));
+    try {
+      localStorage.setItem(LEVEL_KEY, String(this.level));
+    } catch {
+      // bỏ qua
+    }
   }
 
   set(on: boolean) {
@@ -40,6 +53,15 @@ class Music {
   /** Cho trang điều khiển hỏi: nhạc có đang phát thật không */
   get playing() {
     return !!this.el && !this.el.paused && this.el.volume > 0.01;
+  }
+}
+
+function readLevel() {
+  try {
+    const v = Number(localStorage.getItem(LEVEL_KEY));
+    return Number.isFinite(v) && v > 0 ? v : 1;
+  } catch {
+    return 1;
   }
 }
 

@@ -7,7 +7,7 @@ import { NameBatcher } from '../live/scoreboard';
 import { detectWish, GiftThanker, makePicker, OncePerPerson, plain, RecentPeople, WishLimiter } from '../live/chatter';
 import { IS_STAGE } from '../live/page';
 import { GAME } from './config';
-import { parseCommand, pollCandidate, Guests } from './rules';
+import { parseCommand, pollCandidate, Guests, Titles, type StatKey } from './rules';
 import { QUE, type Que } from './loiChuc';
 import { world } from './world/world';
 import { music } from './music';
@@ -86,6 +86,8 @@ export function useGame() {
       poll: null as null | { role: 'groom' | 'bride'; votes: Map<string, { name: string; count: number }>; voted: Set<string>; until: number },
       polledOnce: false,
       ceremony: false,
+      titles: new Titles(GAME.titles),
+      promoteLimit: limiter(15_000),
       trayAgain: new Set<string>(), // gõ bưng mâm lúc đang bưng: bưng tiếp khi xong
       ceremonyNo: 0,
       usedChuc: [] as number[],
@@ -95,6 +97,13 @@ export function useGame() {
 
   const safeName = (nickname: string, username: string) => (containsBanned(nickname) ? username : nickname);
   const spoken = (id: string) => speakableName(names.current.get(id) ?? id);
+
+  // Cộng điểm danh hiệu, vẽ lại bảng tên, MC đọc khi có người lên chức
+  const bump = (id: string, key: StatKey, n = 1) => {
+    const { changed, promoted } = s.titles.add(id, key, n);
+    for (const who of changed) world.setTitle(who, s.titles.titleOf(who));
+    if (promoted && s.promoteLimit('all')) voice.say(GAME.titles.promote(spoken(promoted.id), promoted.title));
+  };
 
   // "cô dâu Lan và chú rể Tuấn" / "cô dâu chú rể"
   const coupleText = () => {
@@ -193,6 +202,7 @@ export function useGame() {
     world.events = {
       queueChange: setQueueLen,
       trayDone: (id) => {
+        bump(id, 'tray');
         if (s.trayAgain.delete(id)) setTimeout(() => world.tray(id), 1300);
         if (!s.guests.addTray(id)) return;
         world.say(id, GAME.bubble.unlocked, 6000);
@@ -216,7 +226,11 @@ export function useGame() {
         );
         setTimeout(release, GAME.photoMaxMs);
       },
-      caught: (id) => voice.say(GAME.bouquetCaught(spoken(id)), true),
+      caught: (id) => {
+        s.titles.caught(id);
+        world.setTitle(id, s.titles.titleOf(id));
+        voice.say(GAME.bouquetCaught(spoken(id)), true);
+      },
       coupleGreet: (id) => {
         if (s.greetLimit('all') && voice.waiting < 2) voice.say(GAME.coupleGreet(cap(coupleText()), spoken(id)));
       },
@@ -260,6 +274,7 @@ export function useGame() {
       const name = meet(id, e.nickname, e.avatar);
       const cmd = parseCommand(e.comment);
       const B = GAME.bubble;
+      bump(id, 'chat');
 
       // đang bầu tên: comment thường được tính là 1 phiếu (mỗi người 1 phiếu)
       if (!cmd && s.poll) {
@@ -294,9 +309,11 @@ export function useGame() {
           world.say(id, B.tray, 2500);
           return;
         case 'dzo':
+          bump(id, 'zo');
           if (!world.dzo(id)) world.dance(id); // hết ghế thì ra quẩy
           return;
         case 'dance':
+          bump(id, 'dance');
           world.dance(id);
           if (world.countTask('dance') >= 5 && s.party('all')) voice.say(GAME.partyLine);
           return;
@@ -331,6 +348,7 @@ export function useGame() {
       const name = meet(id, e.nickname, e.avatar);
       const coins = e.diamondCount * e.repeatCount;
       setLastGift({ ...e, nickname: name, coins });
+      bump(id, 'coins', coins);
 
       // Hiệu ứng chung cho cả rạp theo cấp quà, không đổi luật chơi
       const tier = GAME.giftTiers.find((t) => coins >= t.min) ?? GAME.giftTiers[GAME.giftTiers.length - 1];
@@ -379,6 +397,7 @@ export function useGame() {
       if (!IS_STAGE) return; // chỉ trang stage làm theo lệnh có tiếng, tránh 2 giọng
       if (c.action === 'speak' && c.text) voice.say(c.text, true);
       if (c.action === 'custom' && (c.text === 'music:on' || c.text === 'music:off')) music.set(c.text === 'music:on');
+      if (c.action === 'custom' && c.text?.startsWith('musicVol:')) music.setLevel(Number(c.text.slice(9)) / 100);
       if (c.action === 'setRate' && c.text) voice.rate = Number(c.text) || 1;
       if (c.action === 'reset') {
         voice.stop();
@@ -388,6 +407,7 @@ export function useGame() {
         s.wishes.reset();
         s.recent.reset();
         s.guests.reset();
+        s.titles.reset();
         world.reset();
         setCard(null);
         setGuestCount(0);

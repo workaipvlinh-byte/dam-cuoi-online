@@ -48,4 +48,8 @@
 - Bản mobile TikTok cắt ~100px mỗi bên và đè huy hiệu kênh + xếp hạng ở góc trên trái (tới ~y 255). Mọi chữ/bảng phải nằm trong x 105–975: thanh chụp hình y 262, hàng hướng dẫn "Gõ: BƯNG MÂM · CHỤP HÌNH · DZÔ · QUẨY" một hàng ngang y 380, thẻ ảnh cưới y 470. Bếp, hàng chờ chụp hình cũng đã dời vào trong.
 - Lúc bầu tên, comment khen ("đẹp quá", "xinh ghê", "chúc mừng"...) không tính là phiếu (`NOT_NAME` trong rules.ts).
 - Gõ bưng mâm lúc đang bưng: nhớ lại, bưng tiếp khi xong.
+- TikTok cấm chữ "dzô" trong comment: mọi chữ hiện trên màn hình là "ZÔ" (lệnh nhận cả zô/dzô). Giọng MC vẫn đọc "dô" (giọng Bắc ra âm zô).
+- Danh hiệu trên tên (`GAME.titles`, logic `Titles` trong rules.ts): dẫn đầu thì lên chức bảng vàng + MC đọc (Khách VIP, Trưởng ban tiếp rượu, Trưởng ban hậu cần, Vua sàn nhảy, Trưởng ban tám chuyện; phải ≥2 lần), không thì danh hiệu mốc bảng hồng.
+- Âm lượng nhạc nền chỉnh ở trang điều khiển (0–200%, gửi `musicVol:NN`), trang stage nhớ mức đã chỉnh.
+- Giọng đọc có tự gỡ kẹt (voice.ts): live thật từng bị MC im cả buổi vì câu đầu bị chặn tự phát tiếng và treo.
 - Nền đang vẽ bằng code. Chủ kênh có thể làm ảnh rạp cưới trống (không người) 1080x1920 để thay.

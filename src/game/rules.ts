@@ -110,3 +110,61 @@ export function pollCandidate(comment: string) {
     .join(' ');
 }
 
+
+// ---------- Danh hiệu ----------
+
+export type StatKey = 'coins' | 'zo' | 'tray' | 'dance' | 'chat';
+export interface TitleConfig {
+  leaders: { key: string; name: string }[];
+  milestones: { key: string; min: number; name: string }[];
+  minToLead: number;
+  bouquet: string;
+}
+export interface Title {
+  text: string;
+  gold: boolean;
+}
+
+/** Đếm việc từng người làm, ai dẫn đầu mỗi việc thì lên chức. Hàm thuần, không vẽ. */
+export class Titles {
+  private stats = new Map<string, Record<StatKey, number>>();
+  private leaders = new Map<string, { id: string; n: number }>();
+  private bouquet = new Set<string>();
+  constructor(private cfg: TitleConfig) {}
+
+  /** Cộng điểm. `changed`: những người cần vẽ lại danh hiệu; `promoted`: ai vừa lên chức gì */
+  add(id: string, key: StatKey, n = 1) {
+    let st = this.stats.get(id);
+    if (!st) this.stats.set(id, (st = { coins: 0, zo: 0, tray: 0, dance: 0, chat: 0 }));
+    st[key] += n;
+    const changed = [id];
+    let promoted: { id: string; title: string } | null = null;
+    const lead = this.leaders.get(key);
+    if (lead?.id === id) lead.n = st[key];
+    else if (st[key] >= this.cfg.minToLead && (!lead || st[key] > lead.n)) {
+      if (lead) changed.push(lead.id);
+      this.leaders.set(key, { id, n: st[key] });
+      const name = this.cfg.leaders.find((l) => l.key === key)?.name;
+      if (name) promoted = { id, title: name };
+    }
+    return { changed, promoted };
+  }
+
+  caught(id: string) {
+    this.bouquet.add(id);
+  }
+
+  titleOf(id: string): Title | null {
+    for (const l of this.cfg.leaders) if (this.leaders.get(l.key)?.id === id) return { text: l.name, gold: true };
+    if (this.bouquet.has(id)) return { text: this.cfg.bouquet, gold: false };
+    const st = this.stats.get(id);
+    if (st) for (const m of this.cfg.milestones) if (st[m.key as StatKey] >= m.min) return { text: m.name, gold: false };
+    return null;
+  }
+
+  reset() {
+    this.stats.clear();
+    this.leaders.clear();
+    this.bouquet.clear();
+  }
+}

@@ -123,6 +123,28 @@ export const GAME = {
   bouquetCaught: (name: string) => `Bạn ${name} bắt được hoa cưới rồi! | ^Hoan hô! | Chúc bạn sớm có tin vui nha!`,
   bouquetNobody: 'Chưa ai gõ bắt hoa hết, lát nữa cô dâu tung lại nha!',
 
+  // ---------- Danh hiệu trên tên khách ----------
+  // Dẫn đầu mỗi việc thì lên chức (bảng vàng, MC đọc). Không dẫn đầu thì lấy danh hiệu mốc đầu tiên đạt được (bảng hồng).
+  titles: {
+    leaders: [
+      { key: 'coins', name: 'Khách VIP' },
+      { key: 'zo', name: 'Trưởng ban tiếp rượu' },
+      { key: 'tray', name: 'Trưởng ban hậu cần' },
+      { key: 'dance', name: 'Vua sàn nhảy' },
+      { key: 'chat', name: 'Trưởng ban tám chuyện' },
+    ],
+    minToLead: 2, // phải làm ít nhất 2 lần mới được lên chức
+    bouquet: 'Người bắt hoa cưới',
+    milestones: [
+      { key: 'coins', min: 1, name: 'Mạnh thường quân' },
+      { key: 'zo', min: 3, name: 'Dân nhậu chính hiệu' },
+      { key: 'tray', min: 2, name: 'Thánh bưng mâm' },
+      { key: 'dance', min: 2, name: 'Dancer bất đắc dĩ' },
+      { key: 'chat', min: 8, name: 'Thánh hóng' },
+    ],
+    promote: (name: string, title: string) => `Bạn ${name} vừa lên chức ${title}! Cả rạp vỗ tay chúc mừng nào! | ^Hoan hô!`,
+  },
+
   // ---------- Bầu tên chú rể, cô dâu từ comment ----------
   pollMs: 35_000,
   pollAutoAtGuests: 5, // đủ 5 khách mà chưa có tên thì tự bầu

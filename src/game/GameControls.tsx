@@ -20,6 +20,22 @@ const many = (n: number, f: (i: number) => void) => {
 export function GameControls() {
   const [auto, setAuto] = useState(false);
   const [musicOn, setMusicOn] = useState(true); // trang stage mở lên là nhạc bật
+  const [musicVol, setMusicVol] = useState(() => {
+    try {
+      return Number(localStorage.getItem('damcuoi-music-vol')) || 100;
+    } catch {
+      return 100;
+    }
+  });
+  const changeVol = (v: number) => {
+    setMusicVol(v);
+    try {
+      localStorage.setItem('damcuoi-music-vol', String(v));
+    } catch {
+      // bỏ qua
+    }
+    void sendControl('custom', `musicVol:${v}`);
+  };
 
   // Live giả: mỗi 0,8 giây 1 khách làm 1 việc; ai bưng đủ 2 mâm thì đi chụp hình
   useEffect(() => {
@@ -35,7 +51,7 @@ export function GameControls() {
       } else if (r < 0.4) {
         chat(w, 'bưng mâm');
         trays.set(w.username, n + 1);
-      } else if (r < 0.55) chat(w, 'dzô');
+      } else if (r < 0.55) chat(w, 'zô');
       else if (r < 0.65) chat(w, 'quẩy');
       else if (r < 0.95) chat(w, CHATS[Math.floor(Math.random() * CHATS.length)]);
       else gift(1, 'Hoa hồng');
@@ -60,6 +76,11 @@ export function GameControls() {
         >
           {musicOn ? '🎵 Nhạc nền: BẬT' : '🔇 Nhạc nền: TẮT'}
         </B>
+        <label className="flex items-center gap-1.5 rounded-lg bg-slate-800 px-2.5 py-1 text-xs">
+          Âm lượng nhạc
+          <input type="range" min={0} max={200} step={10} value={musicVol} onChange={(e) => changeVol(Number(e.target.value))} className="w-24 accent-amber-500" />
+          <b className="w-9 text-right">{musicVol}%</b>
+        </label>
         <B onClick={() => testVoice()}>🔊 Thử giọng MC (trang này)</B>
       </Row>
       <Row label="Thử khách">
@@ -78,7 +99,7 @@ export function GameControls() {
         >
           📸 Bưng 2 mâm rồi chụp
         </B>
-        <B onClick={() => many(10, () => chat(anyone(), 'dzô'))}>🥂 10 dzô</B>
+        <B onClick={() => many(10, () => chat(anyone(), 'zô'))}>🥂 10 zô</B>
         <B onClick={() => many(8, () => chat(anyone(), 'quẩy'))}>💃 8 quẩy</B>
         <B onClick={() => many(6, () => chat(anyone(), 'bắt hoa'))}>💐 6 bắt hoa</B>
         <B
