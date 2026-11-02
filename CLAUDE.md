@@ -1,0 +1,36 @@
+# Đám Cưới Online: ghi chú cho Claude
+
+> File này mô tả RIÊNG game này. Luật chung cho mọi game nằm ở `E:\VibeCode\CLAUDE.md` (Claude tự đọc cả hai).
+> Khi chủ kênh chốt một quyết định (câu đọc, màu, font, luật chơi), ghi vào mục "Quyết định của chủ kênh".
+
+## Ý tưởng
+
+Đám cưới quê dựng rạp ngoài sân, kiểu chibi 2.5D. Người xem comment là thành khách mời đi vào qua cổng hoa. Bưng mâm cỗ để được lên sân khấu chụp hình với cô dâu chú rể, cụng ly, quẩy, bắt hoa cưới. MC đọc tên, cảm ơn quà, chúc khách.
+
+## Luật chơi
+
+- Comment lần đầu: khách chibi vào rạp (ngoại hình cố định theo username). Comment thường hiện bong bóng trên đầu (đã che từ bậy).
+- BƯNG MÂM: vào bếp lấy mâm mang ra bàn. Lần đầu bưng 2 mâm mới được chụp hình, sau đó 1 mâm, cách 5 phút.
+- CHỤP HÌNH: xếp hàng (tối đa 20) bên phải, tới lượt lên sân khấu, đèn flash, thẻ "Ảnh cưới" + MC đọc 1 trong 99 lời chúc (`src/game/loiChuc.ts`). Ảnh hiện ít nhất 9 giây, đợi MC đọc xong mới tới người sau.
+- DZÔ: ngồi vào bàn nâng ly (hết ghế thì ra quẩy). QUẨY: ra sàn nhảy, đèn sân khấu quét.
+- Tung hoa: 10 phút một lần, gõ BẮT HOA trong 30 giây, cô dâu tung về 1 người ngẫu nhiên. Không cần quà.
+- Tim: đủ 300 tim cả rạp nâng ly "một, hai, ba, dzô".
+- Quà chỉ là hiệu ứng chung (pháo giấy, bóng bay, pháo hoa, cô dâu chú rể nhảy), không cho chen hàng. MC cảm ơn quà trước mọi câu khác.
+- Tiến độ bưng mâm được nhớ qua các buổi live (localStorage `damcuoi-progress` trên trang stage).
+
+## File của game này
+
+- `src/game/config.ts`: số liệu + mọi câu MC.
+- `src/game/rules.ts`: đọc lệnh trong comment, tiến độ bưng mâm/chụp hình. Test: `npx tsx src/game/rules.check.ts`.
+- `src/game/useGame.ts`: nối sự kiện TikTok vào luật chơi và giọng đọc.
+- `src/game/world/`: rạp cưới trên canvas, không React. `layout.ts` toạ độ, `scene.ts` vẽ rạp, `chibi.ts` vẽ nhân vật, `world.ts` khách đi lại, hàng chờ, hiệu ứng.
+- `src/game/GameStage.tsx` + `stage.css`: tiêu đề, thanh "Đang chụp hình", bảng hướng dẫn, thẻ ảnh cưới.
+- `src/game/GameControls.tsx`: nút giả lập, có "Live giả" 40 khách tự chơi.
+- `src/live/voice.ts`: thêm `say(text, priority, done)` để biết lúc MC đọc xong lời chúc.
+
+## Quyết định của chủ kênh
+
+- Bỏ chủ đề chùa / xin quẻ (né tôn giáo), làm đám cưới. Claude tự chọn: đám cưới quê, cô dâu chú rể cố định, bưng 2 mâm mới chụp.
+- Người tặng quà được MC đọc trước.
+- Giọng MC có cảm xúc: Edge NamMinh, pitch +6%, tốc độ 1.1.
+- Nền đang vẽ bằng code. Chủ kênh có thể làm ảnh rạp cưới trống (không người) 1080x1920 để thay.
