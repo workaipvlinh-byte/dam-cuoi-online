@@ -86,6 +86,7 @@ export function useGame() {
       poll: null as null | { role: 'groom' | 'bride'; votes: Map<string, { name: string; count: number }>; voted: Set<string>; until: number },
       polledOnce: false,
       ceremony: false,
+      trayAgain: new Set<string>(), // gõ bưng mâm lúc đang bưng: bưng tiếp khi xong
       ceremonyNo: 0,
       usedChuc: [] as number[],
       cardKey: 0,
@@ -192,6 +193,7 @@ export function useGame() {
     world.events = {
       queueChange: setQueueLen,
       trayDone: (id) => {
+        if (s.trayAgain.delete(id)) setTimeout(() => world.tray(id), 1300);
         if (!s.guests.addTray(id)) return;
         world.say(id, GAME.bubble.unlocked, 6000);
         if (s.nudgeAll('unlock')) voice.say(GAME.unlocked(spoken(id)));
@@ -287,7 +289,7 @@ export function useGame() {
 
       switch (cmd) {
         case 'tray':
-          if (world.taskOf(id) === 'tray') return;
+          if (world.taskOf(id) === 'tray') return void s.trayAgain.add(id);
           world.tray(id);
           world.say(id, B.tray, 2500);
           return;

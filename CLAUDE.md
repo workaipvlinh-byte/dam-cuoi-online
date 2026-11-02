@@ -45,4 +45,7 @@
 - Khai mạc lễ cưới (`GAME.ceremony`, lời dẫn của chủ kênh, 2 bản đổi lượt): chạy sau khi bầu xong cô dâu, hoặc nút "Khai mạc". Đọc xong lời mở đầu thì cô dâu chú rể đi thảm đỏ từ cổng lên sân khấu, rồi trao nhẫn (nhẫn vàng bay lên), cảm ơn, mời tiệc. Câu khai mạc dùng `keep` nên không bị bỏ dù chờ lâu.
 - Câu hô cụng ly chung (`CHANT` trong config): "Một, hai, ba, dô! Hai, ba, dô! Hai, ba, dô! Hai, ba, uống! Uống cạn ly!"
 - Có 4 chó 4 mèo chạy quanh tiệc (`src/game/world/pets.ts`), chó thỉnh thoảng đuổi mèo. Hoa hồng trang trí dọc thảm đỏ, mép sân khấu, vải rạp, cột, bình hồng giữa bàn.
+- Bản mobile TikTok cắt ~100px mỗi bên và đè huy hiệu kênh + xếp hạng ở góc trên trái (tới ~y 255). Mọi chữ/bảng phải nằm trong x 105–975: thanh chụp hình y 262, hàng hướng dẫn "Gõ: BƯNG MÂM · CHỤP HÌNH · DZÔ · QUẨY" một hàng ngang y 380, thẻ ảnh cưới y 470. Bếp, hàng chờ chụp hình cũng đã dời vào trong.
+- Lúc bầu tên, comment khen ("đẹp quá", "xinh ghê", "chúc mừng"...) không tính là phiếu (`NOT_NAME` trong rules.ts).
+- Gõ bưng mâm lúc đang bưng: nhớ lại, bưng tiếp khi xong.
 - Nền đang vẽ bằng code. Chủ kênh có thể làm ảnh rạp cưới trống (không người) 1080x1920 để thay.

@@ -88,6 +88,11 @@ export class Guests {
   }
 }
 
+// Chữ hay gặp trong comment khen/chúc, gần như không phải tên người (so không dấu)
+const NOT_NAME = new Set(
+  'dep qua xinh ghe vui hay chuc mung troi live nha nhe oi the vay khong ko co chua roi di dzo zo cuoi tim yeu thich dang iu ok a ha hi hihi haha wow'.split(' '),
+);
+
 /** Comment trong lúc bầu -> tên ứng viên. "chú rể là anh Tuấn!!" -> "Tuấn". Không hợp lệ -> null */
 export function pollCandidate(comment: string) {
   let t = comment
@@ -98,6 +103,7 @@ export function pollCandidate(comment: string) {
   t = t.replace(/^(chú rể|chu re|cô dâu|co dau)\s*(là|la)?\s*/i, '').replace(/^(bầu|chọn|cho|bau|chon)\s+/i, '');
   t = t.replace(/^(anh|chị|chi|em|bạn|ban)\s+/i, '').trim();
   if (t.length < 2 || t.length > 20 || t.split(' ').length > 4 || containsBanned(t) || parseCommand(t)) return null;
+  if (plain(t).trim().split(' ').some((w) => NOT_NAME.has(w))) return null;
   return t
     .split(' ')
     .map((w) => cap(w))

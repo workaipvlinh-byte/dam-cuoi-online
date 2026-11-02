@@ -19,7 +19,7 @@ export const DANCE = { x0: 300, x1: 780, y0: 875, y1: 975 };
 export const BOUQUET = { x0: 330, x1: 750, y0: 880, y1: 960 };
 
 // Cửa bếp bên trái: chỗ nhận mâm
-export const KITCHEN = { x: 112, y: 1010 };
+export const KITCHEN = { x: 175, y: 1015 };
 
 // Bàn tiệc: 2 cột trái, 1 cột phải, lối đi giữa
 export interface Table {
@@ -31,8 +31,8 @@ export const TABLE_RX = 64;
 export const TABLE_RY = 26;
 export const TABLES: Table[] = [];
 // 4 hàng đủ 5 bàn + 1 hàng cuối 3 bàn (chừa 2 cột cổng hoa) = 23 bàn
-for (const y of [1080, 1205, 1330, 1455]) for (const x of [150, 290, 430, 655, 800]) TABLES.push({ x, y, food: 0 });
-for (const x of [150, 290, 800]) TABLES.push({ x, y: 1580, food: 0 });
+for (const y of [1080, 1205, 1330, 1455]) for (const x of [165, 300, 435, 655, 785]) TABLES.push({ x, y, food: 0 });
+for (const x of [165, 300, 785]) TABLES.push({ x, y: 1580, food: 0 });
 
 // 8 ghế quanh bàn: 3 sau lưng (khuất sau bàn), 3 phía trước (quay lưng ra camera), 2 hai đầu
 export const SEAT_OFFSETS = [
@@ -48,8 +48,9 @@ export const SEAT_OFFSETS = [
 
 // Hàng chờ chụp hình: đi từ chân bậc lên sân khấu xuống dọc mép phải, 2 cột
 export const QUEUE_SLOTS: { x: number; y: number }[] = [];
-for (let i = 0; i < 11; i++) QUEUE_SLOTS.push({ x: 935, y: 905 + i * 44 });
-for (let i = 0; i < 11; i++) QUEUE_SLOTS.push({ x: 1010, y: 905 + i * 44 });
+// mép phải bị bản mobile cắt ~100px nên hàng chờ nằm trong x 880–945
+for (let i = 0; i < 11; i++) QUEUE_SLOTS.push({ x: 880, y: 905 + i * 44 });
+for (let i = 0; i < 11; i++) QUEUE_SLOTS.push({ x: 945, y: 905 + i * 44 });
 
 // Cổng hoa: khách xuất hiện dưới cổng rồi đi lên
 export const GATE = { x: 540, y: 1700 };
@@ -65,7 +66,7 @@ export function insideTable(x: number, y: number, pad = 18) {
 export const SPECTATORS: { x: number; y: number; back: boolean }[] = [];
 for (let r = 0; r < 3; r++)
   for (let i = 0; i < 4; i++) {
-    SPECTATORS.push({ x: 195 + i * 32 + (r % 2) * 16, y: 885 + r * 38, back: true });
+    SPECTATORS.push({ x: 262 + i * 26 + (r % 2) * 13, y: 885 + r * 38, back: true });
     SPECTATORS.push({ x: 770 + i * 30 + (r % 2) * 15, y: 885 + r * 38, back: true });
   }
 for (let i = 0; i < 9; i++) SPECTATORS.push({ x: 60 + i * 38, y: 1690 + (i % 2) * 22, back: true });

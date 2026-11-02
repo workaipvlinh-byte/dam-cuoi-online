@@ -59,8 +59,8 @@ function paintRoses(ctx: CanvasRenderingContext2D) {
     leaf(ctx, x - 10, y + 6, 8, 0.6);
     drawRose(ctx, x, y, 10, ROSES[k % 3]);
   }
-  // hai chậu hồng lớn hai bên sân khấu
-  for (const x of [215, 865]) {
+  // hai chậu hồng lớn ở hai góc trước sân khấu
+  for (const x of [300, 780]) {
     ctx.fillStyle = '#b97e4c';
     ctx.fillRect(x - 26, 790, 52, 46);
     for (let i = 0; i < 9; i++) roseBush(ctx, x + Math.cos(i * 0.7) * 20, 770 - Math.sin(i * 1.3) * 22 - (i % 3) * 8, 11, i);
@@ -245,30 +245,30 @@ export function paintBackground(ctx: CanvasRenderingContext2D) {
     ctx.fillRect(STAGE.x1 - 10 + i * 4, STAGE.front - 10 + i * 14, 80 - i * 6, 14);
   }
 
-  // bếp bên trái
+  // bếp bên trái (dời vào trong ~85px: bản mobile TikTok cắt mép trái)
   ctx.fillStyle = '#e9c98f';
-  ctx.fillRect(0, 760, 170, 280);
+  ctx.fillRect(0, 760, 255, 280);
   ctx.fillStyle = '#9b4d36';
   ctx.beginPath();
   ctx.moveTo(-10, 770);
-  ctx.lineTo(185, 770);
-  ctx.lineTo(160, 735);
+  ctx.lineTo(270, 770);
+  ctx.lineTo(245, 735);
   ctx.lineTo(0, 735);
   ctx.fill();
   ctx.fillStyle = '#4a3428';
-  roundRect(ctx, 30, 845, 120, 175, 10);
+  roundRect(ctx, 115, 845, 120, 175, 10);
   ctx.fill();
   ctx.fillStyle = '#e8b04a';
   ctx.beginPath();
-  ctx.arc(90, 975, 30, Math.PI, 0);
+  ctx.arc(175, 975, 30, Math.PI, 0);
   ctx.fill();
   ctx.fillStyle = '#5a5a62';
-  roundRect(ctx, 52, 960, 76, 40, 8);
+  roundRect(ctx, 137, 960, 76, 40, 8);
   ctx.fill();
-  for (let i = 0; i < 4; i++) drawTray(ctx, 90, 900 - i * 12, 1.25);
-  ctx.font = '700 26px "Be Vietnam Pro", sans-serif';
+  for (let i = 0; i < 4; i++) drawTray(ctx, 175, 900 - i * 12, 1.25);
+  ctx.font = '800 30px "Be Vietnam Pro", sans-serif';
   ctx.fillStyle = '#7a3b28';
-  ctx.fillText('BẾP', 90, 818);
+  ctx.fillText('BẾP', 175, 818);
 
   // cột rạp hai bên quấn vải hồng
   for (const x of [22, 1058]) {
@@ -354,7 +354,7 @@ export function drawSteam(ctx: CanvasRenderingContext2D, t: number) {
     const k = (t * 0.35 + i / 4) % 1;
     ctx.fillStyle = `rgba(255,255,255,${0.35 * (1 - k)})`;
     ctx.beginPath();
-    ctx.arc(90 + Math.sin(t + i) * 10, 950 - k * 90, 10 + k * 16, 0, Math.PI * 2);
+    ctx.arc(175 + Math.sin(t + i) * 10, 950 - k * 90, 10 + k * 16, 0, Math.PI * 2);
     ctx.fill();
   }
 }

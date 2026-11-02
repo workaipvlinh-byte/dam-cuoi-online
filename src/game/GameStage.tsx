@@ -71,24 +71,14 @@ export function GameStage({ game }: { game: GameState }) {
         </div>
       </div>
 
-      <aside className="dc-guide">
-        <div className="dc-guide-h">Cách tham gia</div>
-        <div className="dc-guide-i">
-          <i>💬</i>Chat để chúc mừng
-        </div>
-        <div className="dc-guide-i">
-          <i>🍲</i>Gõ <b>BƯNG MÂM</b>
-        </div>
-        <div className="dc-guide-i">
-          <i>📸</i>Gõ <b>CHỤP HÌNH</b>
-        </div>
-        <div className="dc-guide-i">
-          <i>🥂</i>Gõ <b>DZÔ</b>
-        </div>
-        <div className="dc-guide-i">
-          <i>💃</i>Gõ <b>QUẨY</b>
-        </div>
-      </aside>
+      {/* Hướng dẫn: 1 hàng ngang dưới thanh chụp hình (bản mobile cắt 2 bên nên không để ở góc) */}
+      <div className="dc-guide">
+        <span className="dc-guide-h">Gõ:</span>
+        <span className="dc-chip">🍲 BƯNG MÂM</span>
+        <span className="dc-chip">📸 CHỤP HÌNH</span>
+        <span className="dc-chip">🥂 DZÔ</span>
+        <span className="dc-chip">💃 QUẨY</span>
+      </div>
 
       {c && (
         <div key={c.key} className="dc-card">

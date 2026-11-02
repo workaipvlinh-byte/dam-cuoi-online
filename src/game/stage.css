@@ -29,11 +29,12 @@
   text-shadow: 0 6px 18px rgba(150, 60, 80, 0.25);
 }
 
+/* Vùng an toàn bản mobile: TikTok cắt ~100px mỗi bên, góc trên trái có huy hiệu kênh + xếp hạng tới ~y 255 */
 .dc-bar {
   position: absolute;
-  top: 178px;
-  left: 36px;
-  right: 36px;
+  top: 262px;
+  left: 105px;
+  right: 105px;
   height: 108px;
   display: flex;
   align-items: center;
@@ -45,12 +46,12 @@
   box-shadow: 0 8px 24px rgba(120, 50, 60, 0.15);
 }
 .dc-pill {
-  padding: 10px 20px;
+  padding: 8px 14px;
   border-radius: 999px;
   background: #f6d58e;
   color: #7a4a10;
   font-weight: 800;
-  font-size: 28px;
+  font-size: 24px;
   white-space: nowrap;
 }
 .dc-pill-live {
@@ -85,7 +86,7 @@
   flex: 1;
 }
 .dc-who b {
-  font-size: 36px;
+  font-size: 32px;
   font-weight: 800;
   white-space: nowrap;
   overflow: hidden;
@@ -116,7 +117,7 @@
   font-size: 22px;
 }
 .dc-like-bar {
-  width: 150px;
+  width: 100px;
   height: 14px;
   border-radius: 999px;
   background: #f3dde3;
@@ -130,45 +131,39 @@
 
 .dc-guide {
   position: absolute;
-  top: 306px;
-  right: 24px;
-  width: 318px;
-  padding: 16px 20px 18px;
-  border-radius: 26px;
-  background: rgba(255, 250, 245, 0.92);
-  border: 3px solid #f6d58e;
-  box-shadow: 0 8px 20px rgba(120, 50, 60, 0.15);
-}
-.dc-guide-h {
-  font-family: 'Dancing Script', cursive;
-  font-weight: 700;
-  font-size: 44px;
-  color: #c2415d;
-  text-align: center;
-  margin-bottom: 4px;
-}
-.dc-guide-i {
+  top: 380px;
+  left: 105px;
+  right: 105px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 22px;
+  background: rgba(255, 250, 245, 0.92);
+  border: 3px solid #f6d58e;
+  box-shadow: 0 6px 16px rgba(120, 50, 60, 0.15);
+}
+.dc-guide-h {
+  font-weight: 800;
+  font-size: 26px;
+  color: #9a6470;
+}
+.dc-chip {
   white-space: nowrap;
-  font-size: 25px;
-  padding: 5px 0;
-}
-.dc-guide-i i {
-  font-style: normal;
-  font-size: 30px;
-}
-.dc-guide-i b {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #fde3ea;
   color: #c2415d;
-  margin-left: 6px;
+  font-weight: 800;
+  font-size: 25px;
 }
 
 .dc-card {
   position: absolute;
-  top: 306px;
-  left: 30px;
-  width: 470px;
+  top: 470px;
+  left: 110px;
+  width: 420px;
   padding: 18px 22px 20px;
   background: #fffdf9;
   border-radius: 16px;
