@@ -5,3 +5,6 @@ dist/
 !.env.example
 .claude/settings.local.json
 settings.json
+
+# nhạc nền: file lớn, có thể có bản quyền, không đưa lên git
+public/assets/audio/

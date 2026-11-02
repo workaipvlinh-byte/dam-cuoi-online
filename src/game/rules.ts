@@ -1,5 +1,8 @@
 // Luật chơi thuần (không React, không vẽ): đọc lệnh trong comment + tiến độ bưng mâm / chụp hình của từng người.
 import { plain } from '../live/chatter';
+import { containsBanned } from '../live/bannedWords';
+
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export type Command = 'tray' | 'dzo' | 'dance' | 'photo' | 'bouquet' | null;
 
@@ -84,3 +87,20 @@ export class Guests {
     }
   }
 }
+
+/** Comment trong lúc bầu -> tên ứng viên. "chú rể là anh Tuấn!!" -> "Tuấn". Không hợp lệ -> null */
+export function pollCandidate(comment: string) {
+  let t = comment
+    .normalize('NFC')
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  t = t.replace(/^(chú rể|chu re|cô dâu|co dau)\s*(là|la)?\s*/i, '').replace(/^(bầu|chọn|cho|bau|chon)\s+/i, '');
+  t = t.replace(/^(anh|chị|chi|em|bạn|ban)\s+/i, '').trim();
+  if (t.length < 2 || t.length > 20 || t.split(' ').length > 4 || containsBanned(t) || parseCommand(t)) return null;
+  return t
+    .split(' ')
+    .map((w) => cap(w))
+    .join(' ');
+}
+

@@ -316,11 +316,16 @@ function splitText(text: string, max = 190): string[] {
   return chunks;
 }
 
-async function edgeTts(text: string, rate: number): Promise<Buffer> {
+// hype = câu hô của MC ("Dô!", "Ối dồi ôi!"): cao giọng, to hơn
+async function edgeTts(text: string, rate: number, hype = false): Promise<Buffer> {
   const tts = new MsEdgeTTS();
   try {
     await tts.setMetadata(TTS_VOICE, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
-    const { audioStream } = tts.toStream(escapeXml(text), { rate: `${Math.round((rate - 1) * 100)}%`, pitch: TTS_PITCH });
+    const { audioStream } = tts.toStream(escapeXml(text), {
+      rate: `${rate >= 1 ? '+' : ''}${Math.round((rate - 1) * 100)}%`,
+      pitch: hype ? '+35%' : TTS_PITCH,
+      volume: hype ? '+50%' : '+0%',
+    });
     const chunks: Buffer[] = [];
     const read = (async () => {
       for await (const c of audioStream) chunks.push(c as Buffer);
@@ -356,11 +361,12 @@ app.get('/api/tts', async (req, res) => {
     const text = String(req.query.text || '').trim().slice(0, 1500);
     if (!text) return res.status(400).send('Thiếu text');
     const rate = Math.min(1.5, Math.max(0.5, Number(req.query.rate) || 1));
-    const key = `${rate}|${text}`;
+    const hype = req.query.hype === '1';
+    const key = `${rate}|${hype}|${text}`;
     let audio = ttsCache.get(key);
     if (!audio) {
       try {
-        audio = await edgeTts(text, rate);
+        audio = await edgeTts(text, rate, hype);
       } catch (err) {
         console.warn('Edge TTS lỗi, chuyển Google:', err instanceof Error ? err.message : err);
         audio = await googleTts(text);

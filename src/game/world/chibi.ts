@@ -3,7 +3,7 @@
 
 export type Pose = 'stand' | 'walk' | 'sit' | 'cheer' | 'dance' | 'clap' | 'wave' | 'pose' | 'carry' | 'catch' | 'throw';
 export type Facing = 'front' | 'back' | 'left' | 'right';
-export type Outfit = 'aodai' | 'shirt' | 'dress' | 'bride' | 'groom';
+export type Outfit = 'aodai' | 'shirt' | 'dress' | 'vest' | 'bride' | 'groom';
 
 export interface Look {
   skin: string;
@@ -12,12 +12,16 @@ export interface Look {
   outfit: Outfit;
   main: string;
   accent: string;
+  pattern?: number; // 0 trơn, 1 chấm bi, 2 kẻ sọc
+  acc?: number; // 0 không, 1 kính, 2 nơ/hoa cài tóc
 }
 
 const SKINS = ['#f8dcc4', '#f3cfb3', '#eec4a2', '#f6d6bd', '#e9b994'];
 const HAIRS = ['#2a201c', '#33251e', '#1f1a18', '#4a3326', '#3a2a22'];
+// tóc nhuộm: đỏ, cam, vàng, trắng bạch kim, hồng khói
+const DYED = ['#c8372d', '#e8812c', '#f2cb4f', '#f1eee8', '#d98fa6'];
 // Màu đồ dịu, không chói: hồng phấn, xanh mint, vàng bơ, tím nhạt, xanh dương nhạt, kem, đào
-const MAINS = ['#f2a7b8', '#9fd8c8', '#f6d58e', '#c6b3e6', '#9ec3ea', '#f0c9a0', '#f7b79b', '#b8d98f', '#e8a0c8', '#8fc7d8'];
+const MAINS = ['#f2a7b8', '#9fd8c8', '#f6d58e', '#c6b3e6', '#9ec3ea', '#f0c9a0', '#f7b79b', '#b8d98f', '#e8a0c8', '#8fc7d8', '#e05a6d', '#2f3d5c', '#5b8c6f', '#f4f1ea', '#8a5cc2', '#d9a441'];
 const ACCENTS = ['#ffffff', '#fff3d6', '#fde2ea', '#e8f4ff'];
 
 export function hash(str: string) {
@@ -29,14 +33,17 @@ export function hash(str: string) {
 /** Cùng 1 username thì luôn ra cùng 1 ngoại hình */
 export function lookFor(username: string): Look {
   const h = hash(username);
-  const outfits: Outfit[] = ['aodai', 'shirt', 'dress', 'aodai', 'shirt'];
+  const outfits: Outfit[] = ['aodai', 'shirt', 'dress', 'vest', 'dress', 'shirt', 'vest'];
+  const h2 = hash(username + '#');
   return {
     skin: SKINS[h % SKINS.length],
-    hair: HAIRS[(h >>> 3) % HAIRS.length],
+    hair: h2 % 10 < 4 ? DYED[(h2 >>> 4) % DYED.length] : HAIRS[(h >>> 3) % HAIRS.length], // 4/10 người nhuộm
     style: (h >>> 6) % 6,
     outfit: outfits[(h >>> 9) % outfits.length],
     main: MAINS[(h >>> 12) % MAINS.length],
     accent: ACCENTS[(h >>> 16) % ACCENTS.length],
+    pattern: (h2 >>> 8) % 3,
+    acc: (h2 >>> 12) % 5 < 2 ? 1 + ((h2 >>> 15) % 2) : 0,
   };
 }
 
@@ -88,7 +95,7 @@ export function drawChibi(
   const sh = base - 31 * u;
   const hc = base - 46 * u;
   const o = look.outfit;
-  const legCol = o === 'groom' ? '#26324c' : o === 'aodai' ? '#fbf7f0' : o === 'shirt' ? '#4b5568' : look.skin;
+  const legCol = o === 'groom' ? '#26324c' : o === 'aodai' ? '#fbf7f0' : o === 'shirt' ? '#4b5568' : o === 'vest' ? shade(look.main, 0.7) : look.skin;
   const shoe = o === 'bride' ? '#f3e6dd' : '#3a2b25';
 
   // chân
@@ -123,32 +130,49 @@ export function drawChibi(
 
   // thân
   const main = back ? shade(look.main, 0.92) : look.main;
-  ctx.fillStyle = main;
-  ctx.beginPath();
+  const body = new Path2D();
   if (o === 'bride') {
-    ctx.moveTo(cx - 8 * u, sh);
-    ctx.lineTo(cx + 8 * u, sh);
-    ctx.quadraticCurveTo(cx + 10 * u, hip - 6 * u, cx + 19 * u, base);
-    ctx.quadraticCurveTo(cx, base + 4 * u, cx - 19 * u, base);
-    ctx.quadraticCurveTo(cx - 10 * u, hip - 6 * u, cx - 8 * u, sh);
+    body.moveTo(cx - 8 * u, sh);
+    body.lineTo(cx + 8 * u, sh);
+    body.quadraticCurveTo(cx + 10 * u, hip - 6 * u, cx + 19 * u, base);
+    body.quadraticCurveTo(cx, base + 4 * u, cx - 19 * u, base);
+    body.quadraticCurveTo(cx - 10 * u, hip - 6 * u, cx - 8 * u, sh);
   } else if (o === 'aodai') {
-    ctx.moveTo(cx - 8.5 * u, sh);
-    ctx.lineTo(cx + 8.5 * u, sh);
-    ctx.lineTo(cx + 10 * u, base - 3 * u);
-    ctx.lineTo(cx - 10 * u, base - 3 * u);
+    body.moveTo(cx - 8.5 * u, sh);
+    body.lineTo(cx + 8.5 * u, sh);
+    body.lineTo(cx + 10 * u, base - 3 * u);
+    body.lineTo(cx - 10 * u, base - 3 * u);
   } else if (o === 'dress') {
-    ctx.moveTo(cx - 8 * u, sh);
-    ctx.lineTo(cx + 8 * u, sh);
-    ctx.lineTo(cx + 13 * u, hip + 4 * u);
-    ctx.lineTo(cx - 13 * u, hip + 4 * u);
+    body.moveTo(cx - 8 * u, sh);
+    body.lineTo(cx + 8 * u, sh);
+    body.lineTo(cx + 13 * u, hip + 4 * u);
+    body.lineTo(cx - 13 * u, hip + 4 * u);
   } else {
-    ctx.moveTo(cx - 9.5 * u, sh);
-    ctx.lineTo(cx + 9.5 * u, sh);
-    ctx.lineTo(cx + 10 * u, hip + 1 * u);
-    ctx.lineTo(cx - 10 * u, hip + 1 * u);
+    body.moveTo(cx - 9.5 * u, sh);
+    body.lineTo(cx + 9.5 * u, sh);
+    body.lineTo(cx + 10 * u, hip + 1 * u);
+    body.lineTo(cx - 10 * u, hip + 1 * u);
   }
-  ctx.closePath();
-  ctx.fill();
+  body.closePath();
+  ctx.fillStyle = main;
+  ctx.fill(body);
+  // hoạ tiết: chấm bi / kẻ sọc
+  if (look.pattern && o !== 'bride' && o !== 'groom' && o !== 'vest') {
+    ctx.save();
+    ctx.clip(body);
+    ctx.fillStyle = look.accent === '#ffffff' ? 'rgba(255,255,255,0.75)' : look.accent;
+    if (look.pattern === 1) {
+      for (let yy = sh + 3 * u; yy < base; yy += 5 * u)
+        for (let xx = cx - 12 * u + ((yy / u) % 2) * 2.5 * u; xx < cx + 13 * u; xx += 5 * u) {
+          ctx.beginPath();
+          ctx.arc(xx, yy, 1.1 * u, 0, Math.PI * 2);
+          ctx.fill();
+        }
+    } else {
+      for (let yy = sh + 2 * u; yy < base; yy += 4.5 * u) ctx.fillRect(cx - 14 * u, yy, 28 * u, 1.6 * u);
+    }
+    ctx.restore();
+  }
 
   // chi tiết thân
   if (!back) {
@@ -175,6 +199,17 @@ export function drawChibi(
       ctx.moveTo(cx - 3 * u, sh + 1 * u);
       ctx.quadraticCurveTo(cx + 2 * u, sh + 6 * u, cx + 7 * u, sh + 9 * u);
       ctx.stroke();
+    } else if (o === 'vest') {
+      // áo vest mở, sơ mi trắng + cà vạt / nơ
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.moveTo(cx - 4 * u, sh);
+      ctx.lineTo(cx + 4 * u, sh);
+      ctx.lineTo(cx + 2 * u, hip);
+      ctx.lineTo(cx - 2 * u, hip);
+      ctx.fill();
+      ctx.fillStyle = look.accent === '#ffffff' ? '#d4566b' : '#c2344d';
+      ctx.fillRect(cx - 1 * u, sh + 1 * u, 2 * u, 9 * u);
     } else if (o === 'bride') {
       ctx.fillStyle = 'rgba(245,198,211,0.9)';
       ctx.fillRect(cx - 8 * u, hip - 9 * u, 16 * u, 2.4 * u);
@@ -305,6 +340,29 @@ export function drawChibi(
     ctx.beginPath();
     if (happy) ctx.ellipse(cx + ex, hc + 7 * u, 2.4 * u, 1.9 * u, 0, 0, Math.PI * 2);
     else ctx.ellipse(cx + ex, hc + 7 * u, 1.6 * u, 0.8 * u, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  if (look.acc === 1 && !back) {
+    // kính tròn
+    ctx.strokeStyle = '#2b1d18';
+    ctx.lineWidth = 1.2 * u;
+    const ex = side * 4 * u;
+    for (const k of [-1, 1]) {
+      ctx.beginPath();
+      ctx.arc(cx + ex + k * 5 * u, hc + 1.5 * u, 3.6 * u, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.moveTo(cx + ex - 1.4 * u, hc + 1.5 * u);
+    ctx.lineTo(cx + ex + 1.4 * u, hc + 1.5 * u);
+    ctx.stroke();
+  } else if (look.acc === 2) {
+    // nơ cài tóc
+    ctx.fillStyle = look.main === '#f4f1ea' ? '#e05a6d' : look.main;
+    ctx.beginPath();
+    ctx.ellipse(cx + 9 * u, hc - 12 * u, 3.6 * u, 2.4 * u, -0.5, 0, Math.PI * 2);
+    ctx.ellipse(cx + 14 * u, hc - 9 * u, 3.6 * u, 2.4 * u, -0.5, 0, Math.PI * 2);
     ctx.fill();
   }
 

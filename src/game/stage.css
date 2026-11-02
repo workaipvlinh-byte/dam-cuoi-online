@@ -255,3 +255,34 @@
   background: linear-gradient(90deg, #d4566b, #f6b26b);
   color: #fff;
 }
+
+.dc-poll {
+  position: absolute;
+  top: 980px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: fit-content;
+  min-width: 560px;
+  padding: 18px 30px 20px;
+  border-radius: 30px;
+  background: rgba(255, 250, 245, 0.95);
+  border: 4px solid #d4566b;
+  box-shadow: 0 10px 28px rgba(150, 40, 60, 0.3);
+  text-align: center;
+}
+.dc-poll-h {
+  font-size: 34px;
+}
+.dc-poll-h b {
+  color: #c2415d;
+  font-weight: 800;
+}
+.dc-poll-row {
+  font-size: 32px;
+  padding-top: 6px;
+}
+.dc-poll-row b {
+  color: #c2415d;
+  margin-left: 8px;
+}

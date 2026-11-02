@@ -126,13 +126,17 @@ export function paintBackground(ctx: CanvasRenderingContext2D) {
     ctx.ellipse(fx + 12, fy + 10, 8, 4, a, 0, Math.PI * 2);
     ctx.fill();
   }
+  // long phượng sum vầy: rồng bên trái, phượng bên phải, quay vào nhau
+  drawDragon(ctx, 445, 488, 0.62, 1, 0);
+  drawPhoenix(ctx, 640, 488, 0.62, -1, 0);
+  heartShape(ctx, 540, 478, 22, '#d4566b');
   ctx.textAlign = 'center';
   ctx.fillStyle = '#c48a2c';
-  ctx.font = '700 96px "Dancing Script", cursive';
-  ctx.fillText('Hạnh Phúc', 540, 600);
-  ctx.font = '600 30px "Be Vietnam Pro", sans-serif';
+  ctx.font = '700 84px "Dancing Script", cursive';
+  ctx.fillText('Hạnh Phúc', 540, 612);
+  ctx.font = '600 26px "Be Vietnam Pro", sans-serif';
   ctx.fillStyle = '#b86f7d';
-  ctx.fillText('♥  TRĂM NĂM  ♥', 540, 650);
+  ctx.fillText('LONG PHƯỢNG SUM VẦY', 540, 656);
 
   // loa thùng hai bên
   for (const x of [255, 825]) {
@@ -315,7 +319,7 @@ export function drawTable(ctx: CanvasRenderingContext2D, tb: Table, glow: number
   for (let i = 0; i < 5; i++) {
     const a = (i / 5) * Math.PI * 2 + 0.4;
     ctx.fillStyle = 'rgba(250,200,90,0.9)';
-    ctx.fillRect(x + Math.cos(a) * 62 - 3, y + Math.sin(a) * 22 - 9, 6, 9);
+    ctx.fillRect(x + Math.cos(a) * 50 - 3, y + Math.sin(a) * 17 - 9, 6, 9);
   }
   const spots = [-34, 34, 0];
   for (let i = 0; i < tb.food; i++) drawTray(ctx, x + spots[i], y + (i === 2 ? -10 : 2), 1.05);
@@ -341,11 +345,223 @@ export function drawGate(ctx: CanvasRenderingContext2D) {
     ctx.arc(540 + Math.cos(a) * 125, 1510 + Math.sin(a) * 70, 17, 0, Math.PI * 2);
     ctx.fill();
   }
-  roundRect(ctx, 455, 1410, 170, 46, 12);
-  ctx.fillStyle = '#d4566b';
+  roundRect(ctx, 440, 1404, 200, 54, 14);
+  ctx.fillStyle = '#c2344d';
   ctx.fill();
-  ctx.fillStyle = '#fff3d6';
-  ctx.font = '700 26px "Be Vietnam Pro", sans-serif';
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = '#efc46a';
+  ctx.stroke();
+  ctx.fillStyle = '#ffe7a8';
+  ctx.font = '800 32px "Be Vietnam Pro", sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText('VU QUY', 540, 1442);
+  // rồng phượng hai bên biển cổng
+  drawDragon(ctx, 385, 1428, 0.42, 1, 0);
+  drawPhoenix(ctx, 698, 1428, 0.42, -1, 0);
+}
+
+function heartShape(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, c: string) {
+  ctx.fillStyle = c;
+  ctx.beginPath();
+  ctx.moveTo(x, y + s * 0.4);
+  ctx.bezierCurveTo(x - s, y - s * 0.3, x - s * 0.45, y - s, x, y - s * 0.45);
+  ctx.bezierCurveTo(x + s * 0.45, y - s, x + s, y - s * 0.3, x, y + s * 0.4);
+  ctx.fill();
+}
+
+/** Rồng vàng cách điệu. dir 1 = đầu quay sang phải. t = thời gian (lượn mình khi bay) */
+export function drawDragon(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, dir: 1 | -1, t: number) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(dir * s, s);
+  // thân: chuỗi vảy tròn uốn sóng từ đuôi (trái) tới đầu (phải)
+  const N = 22;
+  for (let i = 0; i < N; i++) {
+    const k = i / (N - 1);
+    const bx = -150 + k * 230;
+    const by = Math.sin(k * Math.PI * 2.2 + t * 4) * 26;
+    const r = 7 + k * 13;
+    ctx.fillStyle = i % 2 ? '#e8b23f' : '#d99a2b';
+    ctx.beginPath();
+    ctx.arc(bx, by, r, 0, Math.PI * 2);
+    ctx.fill();
+    // vây lưng
+    if (i % 3 === 0) {
+      ctx.fillStyle = '#c0392b';
+      ctx.beginPath();
+      ctx.moveTo(bx - r * 0.5, by - r * 0.7);
+      ctx.lineTo(bx, by - r * 1.6);
+      ctx.lineTo(bx + r * 0.5, by - r * 0.7);
+      ctx.fill();
+    }
+  }
+  const hy = Math.sin(Math.PI * 2.2 + t * 4) * 26;
+  // đầu
+  ctx.fillStyle = '#f0c04f';
+  ctx.beginPath();
+  ctx.ellipse(98, hy - 4, 30, 21, -0.15, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(124, hy + 4, 18, 11, 0.1, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#c0392b';
+  ctx.lineWidth = 4;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(86, hy - 20);
+  ctx.quadraticCurveTo(70, hy - 50, 50, hy - 48); // sừng
+  ctx.moveTo(130, hy + 10);
+  ctx.quadraticCurveTo(150, hy + 30, 170, hy + 20); // râu
+  ctx.moveTo(128, hy - 2);
+  ctx.quadraticCurveTo(152, hy - 22, 172, hy - 12);
+  ctx.stroke();
+  ctx.fillStyle = '#2b1d18';
+  ctx.beginPath();
+  ctx.arc(104, hy - 9, 4.5, 0, Math.PI * 2);
+  ctx.fill();
+  // viên ngọc
+  ctx.fillStyle = '#ff6b6b';
+  ctx.beginPath();
+  ctx.arc(160, hy - 40, 11, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(255,220,120,0.6)';
+  ctx.beginPath();
+  ctx.arc(160, hy - 40, 17, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+/** Phượng hồng vàng cách điệu. dir 1 = đầu quay sang phải */
+export function drawPhoenix(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, dir: 1 | -1, t: number) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(dir * s, s);
+  // đuôi dài nhiều lông
+  const tails = ['#f49ab2', '#e8b23f', '#d4566b', '#f6d58e', '#f7b79b'];
+  tails.forEach((c, i) => {
+    const sway = Math.sin(t * 3 + i) * 10;
+    ctx.strokeStyle = c;
+    ctx.lineWidth = 9 - i;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(0, 10);
+    ctx.bezierCurveTo(-60, 30 + i * 10, -120, -10 + i * 14 + sway, -175 + i * 6, 25 + i * 16 + sway);
+    ctx.stroke();
+    ctx.fillStyle = c;
+    ctx.beginPath();
+    ctx.arc(-175 + i * 6, 25 + i * 16 + sway, 8, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  // cánh
+  const flap = Math.sin(t * 6) * 0.25;
+  ctx.fillStyle = '#f7c3d0';
+  ctx.beginPath();
+  ctx.moveTo(-5, 0);
+  ctx.quadraticCurveTo(-30, -80 - flap * 60, -95, -70 - flap * 50);
+  ctx.quadraticCurveTo(-50, -30, -20, 12);
+  ctx.fill();
+  ctx.fillStyle = '#e8b23f';
+  ctx.beginPath();
+  ctx.moveTo(-10, -5);
+  ctx.quadraticCurveTo(-35, -55 - flap * 40, -80, -60 - flap * 40);
+  ctx.quadraticCurveTo(-45, -25, -18, 8);
+  ctx.fill();
+  // thân + cổ + đầu
+  ctx.fillStyle = '#d4566b';
+  ctx.beginPath();
+  ctx.ellipse(10, 4, 34, 18, -0.3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#d4566b';
+  ctx.lineWidth = 13;
+  ctx.beginPath();
+  ctx.moveTo(30, -6);
+  ctx.quadraticCurveTo(48, -30, 44, -52);
+  ctx.stroke();
+  ctx.fillStyle = '#e45f78';
+  ctx.beginPath();
+  ctx.arc(46, -56, 13, 0, Math.PI * 2);
+  ctx.fill();
+  // mào
+  ctx.fillStyle = '#e8b23f';
+  for (let i = 0; i < 3; i++) {
+    ctx.beginPath();
+    ctx.ellipse(40 - i * 7, -74 + i * 2, 4, 10, -0.5 - i * 0.3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.fillStyle = '#e8b23f';
+  ctx.beginPath();
+  ctx.moveTo(57, -58);
+  ctx.lineTo(72, -52);
+  ctx.lineTo(57, -50);
+  ctx.fill();
+  ctx.fillStyle = '#2b1d18';
+  ctx.beginPath();
+  ctx.arc(50, -59, 3.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+/** Cả rạp lên đèn: các vệt màu quét khắp sân */
+export function drawPartyWash(ctx: CanvasRenderingContext2D, t: number) {
+  const cols = ['255,120,170', '120,200,255', '255,220,110', '180,140,255', '140,255,190'];
+  ctx.globalCompositeOperation = 'lighter';
+  for (let i = 0; i < 7; i++) {
+    const x = 540 + Math.sin(t * (0.8 + i * 0.23) + i * 1.3) * 460;
+    const y = 1150 + Math.cos(t * (1.1 + i * 0.17) + i) * 380;
+    const g = ctx.createRadialGradient(x, y, 0, x, y, 230);
+    const a = 0.22 + 0.12 * Math.sin(t * 10 + i);
+    g.addColorStop(0, `rgba(${cols[i % cols.length]},${a})`);
+    g.addColorStop(1, `rgba(${cols[i % cols.length]},0)`);
+    ctx.fillStyle = g;
+    ctx.fillRect(x - 230, y - 230, 460, 460);
+  }
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+/** Xe hoa chạy ngang (quà to). k: 0..1 tiến độ */
+export function drawWeddingCar(ctx: CanvasRenderingContext2D, k: number, t: number) {
+  const x = -260 + k * (W + 520);
+  const y = 1600;
+  ctx.save();
+  ctx.translate(x, y);
+  // thân xe trắng
+  ctx.fillStyle = 'rgba(60,30,20,0.2)';
+  ctx.beginPath();
+  ctx.ellipse(0, 52, 150, 14, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#fffaf6';
+  roundRect(ctx, -140, -10, 280, 60, 26);
+  ctx.fill();
+  roundRect(ctx, -80, -62, 150, 62, 28);
+  ctx.fill();
+  ctx.fillStyle = '#bfe3f4';
+  roundRect(ctx, -66, -52, 58, 42, 10);
+  ctx.fill();
+  roundRect(ctx, 2, -52, 56, 42, 10);
+  ctx.fill();
+  for (const wx of [-85, 85]) {
+    ctx.fillStyle = '#2b2b33';
+    ctx.beginPath();
+    ctx.arc(wx, 50, 24, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#c9c9d1';
+    ctx.save();
+    ctx.translate(wx, 50);
+    ctx.rotate(t * 12);
+    ctx.fillRect(-12, -2, 24, 4);
+    ctx.restore();
+  }
+  // hoa trên nắp capo + nơ
+  const cols = ['#f49ab2', '#ffffff', '#f7c3d0', '#ffd8b5'];
+  for (let i = 0; i < 9; i++) {
+    ctx.fillStyle = cols[i % 4];
+    ctx.beginPath();
+    ctx.arc(70 + (i % 3) * 18, -6 - Math.floor(i / 3) * 12, 10, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.fillStyle = '#d4566b';
+  ctx.font = '800 26px "Be Vietnam Pro", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('XE HOA', -40, 30);
+  ctx.restore();
 }

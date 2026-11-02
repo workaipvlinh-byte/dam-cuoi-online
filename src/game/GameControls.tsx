@@ -72,11 +72,26 @@ export function GameControls() {
         >
           💐 Tung hoa ngay + 6 người bắt
         </B>
-        <B onClick={() => gift(1, 'Hoa hồng')}>🌹 Quà 1 xu</B>
-        <B onClick={() => gift(30, 'Bánh donut')}>🎈 Quà 30 xu</B>
-        <B onClick={() => gift(99, 'Bắn tim')}>🎆 Quà 99 xu</B>
-        <B onClick={() => gift(1000, 'Thiên hà')}>💍 Quà 1000 xu</B>
-        <B onClick={() => emitTest('like', { ...anyone(), likeCount: 300 })}>❤️ 300 tim (cả rạp dzô)</B>
+        <B onClick={() => gift(1, 'Hoa hồng')}>🌹 1 xu</B>
+        <B onClick={() => gift(10, 'Kẹo')}>🎈 10 xu</B>
+        <B onClick={() => gift(30, 'Bánh donut')}>🧧 30 xu (phong bì)</B>
+        <B onClick={() => gift(99, 'Bắn tim')}>🎆 99 xu (pháo hoa)</B>
+        <B onClick={() => gift(299, 'Xe')}>🚗 299 xu (xe hoa)</B>
+        <B onClick={() => gift(1000, 'Thiên hà')}>🐉 1000 xu (long phượng)</B>
+        <B onClick={() => gift(5000, 'Sư tử')}>💍 5000 xu (đại gia)</B>
+        <B onClick={() => emitTest('like', { ...anyone(), likeCount: 300 })}>❤️ 300 tim (cả rạp quẩy)</B>
+        <B
+          onClick={() => {
+            void sendControl('custom', 'poll');
+            const votes = ['Tuấn', 'Tuấn', 'anh Long', 'Tuấn', 'Long'];
+            votes.forEach((v, i) => setTimeout(() => chat(POOL[i + 5], v), 4000 + i * 900));
+            ['Lan', 'chị Lan', 'Hà', 'Lan'].forEach((v, i) => setTimeout(() => chat(POOL[i + 12], v), 48_000 + i * 900));
+          }}
+        >
+          💒 Bầu chú rể + cô dâu (có phiếu giả)
+        </B>
+        <B onClick={() => void sendControl('custom', 'clearCouple')}>✖ Xoá tên cô dâu chú rể</B>
+        <B onClick={() => void sendControl('custom', 'music')}>🎵 Bật/tắt nhạc nền (trên stage)</B>
         <B onClick={() => testVoice()}>🔊 Thử giọng MC (chỉ trang này nghe)</B>
       </div>
       <p className="mt-2 text-xs text-slate-500">Bưng 2 mâm được chụp lần đầu, sau đó 1 mâm. Tung hoa tự chạy mỗi 10 phút. Số liệu ở src/game/config.ts.</p>
@@ -86,15 +101,24 @@ export function GameControls() {
 
 // Nghe thử ngay ở trang điều khiển, không gửi sang stage (không thành 2 giọng trên live)
 const SAMPLES = [
-  GAME.thankBigGift('Hoàng Long') + ' ' + GAME.giftWishes[1],
-  GAME.photo('Ngọc Hân', QUE[1].loi),
   GAME.boostLine,
+  GAME.giftTiers[1].lines[0]('Hoàng Long'),
+  GAME.giftTiers[4].lines[1]('Minh Tuấn'),
+  GAME.photo('Ngọc Hân', QUE[1].loi, 'cô dâu Lan và chú rể Tuấn'),
   GAME.greetings[0]('bạn Lan Anh, bạn Minh Tuấn và bạn Thu Trang'),
 ];
 let sample = 0;
-function testVoice() {
-  const text = SAMPLES[sample++ % SAMPLES.length];
-  void new Audio(`/api/tts?rate=1.1&text=${encodeURIComponent(text)}`).play();
+async function testVoice() {
+  // cùng cách đọc với stage: "|" tách đoạn, "^" hô, "^^" hô kéo dài
+  for (const raw of SAMPLES[sample++ % SAMPLES.length].split('|')) {
+    const t = raw.trim();
+    const a = new Audio(`/api/tts?rate=1.1${t.startsWith('^') ? '&hype=1' : ''}&text=${encodeURIComponent(t.replace(/^\^+/, ''))}`);
+    if (t.startsWith('^^')) a.playbackRate = 0.6;
+    await new Promise<void>((r) => {
+      a.onended = a.onerror = () => r();
+      a.play().catch(() => r());
+    });
+  }
 }
 
 function B({ children, onClick, on }: { children: ReactNode; onClick: () => void; on?: boolean }) {

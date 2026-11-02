@@ -23,6 +23,12 @@ export function GameStage({ game }: { game: GameState }) {
     return () => clearInterval(t);
   }, [game.bouquetUntil]);
   const bouquetLeft = Math.max(0, Math.ceil((game.bouquetUntil - Date.now()) / 1000));
+  const poll = game.poll;
+  useEffect(() => {
+    if (!poll) return;
+    const t = setInterval(() => tick((x) => x + 1), 500);
+    return () => clearInterval(t);
+  }, [poll?.role]);
 
   const likePct = Math.min(100, (game.likeProgress / GAME.likesPerBoost) * 100);
   const c = game.card;
@@ -93,6 +99,19 @@ export function GameStage({ game }: { game: GameState }) {
           <div className="dc-card-ten">{c.chuc.ten}</div>
           <p className="dc-card-loi">{c.chuc.loi}</p>
           <p className="dc-card-khuyen">{c.chuc.khuyen}</p>
+        </div>
+      )}
+
+      {poll && (
+        <div className="dc-poll">
+          <div className="dc-poll-h">
+            Bầu <b>{poll.role === 'groom' ? 'CHÚ RỂ' : 'CÔ DÂU'}</b> · comment tên · {Math.max(0, Math.ceil((poll.until - Date.now()) / 1000))}s
+          </div>
+          {poll.top.map((v, i) => (
+            <div key={v.name} className="dc-poll-row">
+              {['🥇', '🥈', '🥉'][i]} {cut(v.name, 16)} <b>{v.count}</b>
+            </div>
+          ))}
         </div>
       )}
 

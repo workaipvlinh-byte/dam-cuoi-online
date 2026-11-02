@@ -5,6 +5,7 @@ import { containsBanned } from './bannedWords';
  * Hàng đợi giọng đọc. Chỉ phát trên trang stage.
  *   voice.say('Chào bạn A')            -> xếp cuối hàng
  *   voice.say('Cảm ơn quà', true)      -> ưu tiên, chen lên đầu (dùng cho quà)
+ *   voice.say('Một, hai, ba | ^^Dô!')  -> "|" tách đoạn; "^" hô cao giọng, "^^" hô cao + kéo dài
  * Câu nào chờ quá lâu (mặc định 60 giây) thì bỏ, để không đọc chuyện đã cũ.
  */
 interface Line {
@@ -77,14 +78,23 @@ class Voice {
     if (!line) return;
     this.playing = true;
     try {
-      const audio = new Audio(`/api/tts?rate=${this.rate}&text=${encodeURIComponent(line.text)}`);
-      audio.volume = this.volume;
-      this.current = audio;
-      await new Promise<void>((resolve) => {
-        audio.onended = () => resolve();
-        audio.onerror = () => resolve();
-        audio.play().catch(() => resolve());
-      });
+      // "Một, hai, ba | ^^Dô!" -> đọc thường rồi hô. "^" = hô cao giọng, "^^" = hô cao + kéo dài
+      for (const raw of line.text.split('|')) {
+        const stretch = raw.trim().startsWith('^^');
+        const hype = raw.trim().startsWith('^');
+        const text = raw.trim().replace(/^\^+/, '');
+        if (!text) continue;
+        const audio = new Audio(`/api/tts?rate=${this.rate}${hype ? '&hype=1' : ''}&text=${encodeURIComponent(text)}`);
+        audio.volume = this.volume;
+        if (stretch) audio.playbackRate = 0.6; // trình duyệt giữ nguyên độ cao, chỉ kéo dài: "Dôôô"
+        this.current = audio;
+        await new Promise<void>((resolve) => {
+          audio.onended = () => resolve();
+          audio.onerror = () => resolve();
+          audio.play().catch(() => resolve());
+        });
+        if (this.current !== audio) break; // stop() giữa chừng
+      }
     } finally {
       line.done?.();
       this.current = null;

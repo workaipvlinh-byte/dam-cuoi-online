@@ -1,6 +1,6 @@
 // Tự kiểm tra luật chơi: npx tsx src/game/rules.check.ts
 import assert from 'node:assert';
-import { Guests, parseCommand } from './rules';
+import { Guests, parseCommand, pollCandidate } from './rules';
 
 assert.equal(parseCommand('Bưng Mâm!!'), 'tray');
 assert.equal(parseCommand('bung mam'), 'tray');
@@ -26,4 +26,10 @@ assert.deepEqual(g.canPhoto('a', 62_000), { ok: true });
 const copy = new Guests(2, 1, 60_000);
 copy.load(g.save());
 assert.deepEqual(copy.canPhoto('a', 62_000), { ok: true });
+assert.equal(pollCandidate('chú rể là anh Tuấn!!'), 'Tuấn');
+assert.equal(pollCandidate('Lan'), 'Lan');
+assert.equal(pollCandidate('bầu chị ngọc hân'), 'Ngọc Hân');
+assert.equal(pollCandidate('bưng mâm'), null);
+assert.equal(pollCandidate('x'), null);
+assert.equal(pollCandidate('một câu rất dài không phải là tên người đâu nha'), null);
 console.log('rules ok');

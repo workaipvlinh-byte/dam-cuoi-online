@@ -4,21 +4,29 @@ import type { GiftEvent, LiveStatus } from '../live/types';
 import { voice, speakableName } from '../live/voice';
 import { containsBanned, maskBanned } from '../live/bannedWords';
 import { NameBatcher } from '../live/scoreboard';
-import { detectWish, GiftThanker, makePicker, OncePerPerson, RecentPeople, WishLimiter } from '../live/chatter';
+import { detectWish, GiftThanker, makePicker, OncePerPerson, plain, RecentPeople, WishLimiter } from '../live/chatter';
 import { IS_STAGE } from '../live/page';
 import { GAME } from './config';
-import { parseCommand, Guests } from './rules';
+import { parseCommand, pollCandidate, Guests } from './rules';
 import { QUE, type Que } from './loiChuc';
 import { world } from './world/world';
+import { music } from './music';
 
 const pick = makePicker();
 const SAVE_KEY = 'damcuoi-progress';
+const COUPLE_KEY = 'damcuoi-couple';
 
 export interface PhotoCard {
   key: number;
   name: string;
   avatar: string;
   chuc: Que;
+}
+
+export interface PollView {
+  role: 'groom' | 'bride';
+  until: number;
+  top: { name: string; count: number }[];
 }
 
 /** Mỗi việc chỉ cho phép 1 lần / `ms` (theo người, hoặc cả phòng nếu key cố định) */
@@ -31,6 +39,8 @@ function limiter(ms: number) {
   };
 }
 
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
 export function useGame() {
   const [status, setStatus] = useState<LiveStatus | null>(null);
   const [channelName, setChannelName] = useState(GAME.defaultChannelName);
@@ -40,6 +50,8 @@ export function useGame() {
   const [likeProgress, setLikeProgress] = useState(0);
   const [bouquetUntil, setBouquetUntil] = useState(0);
   const [guestCount, setGuestCount] = useState(0);
+  const [poll, setPoll] = useState<PollView | null>(null);
+  const [couple, setCouple] = useState({ groom: '', bride: '' });
   const likeBase = useRef<number | null>(null);
   const avatars = useRef(new Map<string, string>());
   const names = useRef(new Map<string, string>());
@@ -47,8 +59,15 @@ export function useGame() {
   const [s] = useState(() => {
     const guests = new Guests(GAME.firstTrays, GAME.nextTrays, GAME.photoCooldownMs);
     if (IS_STAGE) guests.load(safeGet(SAVE_KEY));
+    let saved = { groom: '', bride: '' };
+    try {
+      saved = { ...saved, ...JSON.parse(safeGet(COUPLE_KEY) || '{}') };
+    } catch {
+      // bỏ qua
+    }
     return {
       guests,
+      couple: saved,
       greeter: new NameBatcher(
         GAME.greetEveryMs,
         GAME.namesPerGreeting,
@@ -62,7 +81,10 @@ export function useGame() {
       nudgeUser: limiter(2 * 60_000),
       nudgeAll: limiter(20_000),
       party: limiter(3 * 60_000),
+      greetLimit: limiter(30_000),
       bouquet: null as null | Set<string>,
+      poll: null as null | { role: 'groom' | 'bride'; votes: Map<string, { name: string; count: number }>; voted: Set<string>; until: number },
+      polledOnce: false,
       usedChuc: [] as number[],
       cardKey: 0,
     };
@@ -70,6 +92,23 @@ export function useGame() {
 
   const safeName = (nickname: string, username: string) => (containsBanned(nickname) ? username : nickname);
   const spoken = (id: string) => speakableName(names.current.get(id) ?? id);
+
+  // "cô dâu Lan và chú rể Tuấn" / "cô dâu chú rể"
+  const coupleText = () => {
+    const g = s.couple.groom && speakableName(s.couple.groom);
+    const b = s.couple.bride && speakableName(s.couple.bride);
+    if (g && b) return `cô dâu ${b} và chú rể ${g}`;
+    if (g) return `chú rể ${g} và cô dâu`;
+    if (b) return `cô dâu ${b} và chú rể`;
+    return 'cô dâu chú rể';
+  };
+
+  const applyCouple = (next: { groom: string; bride: string }) => {
+    s.couple = next;
+    setCouple(next);
+    world.setCoupleNames(next.groom, next.bride);
+    if (IS_STAGE) safeSet(COUPLE_KEY, JSON.stringify(next));
+  };
 
   // Lời chúc khi chụp hình: rút ngẫu nhiên, không lặp lại 30 câu gần nhất
   const nextChuc = () => {
@@ -80,8 +119,38 @@ export function useGame() {
     return q;
   };
 
-  // Thế giới (canvas) báo ngược về: bưng mâm xong, tới lượt chụp, bắt được hoa
+  // ---------- bầu chú rể rồi cô dâu ----------
+  const startPoll = (role: 'groom' | 'bride') => {
+    if (s.poll) return;
+    const until = Date.now() + GAME.pollMs;
+    s.poll = { role, votes: new Map(), voted: new Set(), until };
+    s.polledOnce = true;
+    setPoll({ role, until, top: [] });
+    voice.say(GAME.pollAsk[role], true);
+    setTimeout(() => endPoll(), GAME.pollMs);
+  };
+
+  const endPoll = () => {
+    const p = s.poll;
+    if (!p) return;
+    s.poll = null;
+    setPoll(null);
+    const roleName = p.role === 'groom' ? 'chú rể' : 'cô dâu';
+    const best = [...p.votes.values()].sort((a, b) => b.count - a.count)[0];
+    if (best) {
+      applyCouple({ ...s.couple, [p.role]: best.name });
+      voice.say(GAME.pollWin(cap(roleName), speakableName(best.name)), true);
+      world.confetti(80);
+      world.coupleDance(5000);
+    } else voice.say(GAME.pollNone(roleName));
+    if (p.role === 'groom') setTimeout(() => startPoll('bride'), 5000);
+  };
+
+  // Thế giới (canvas) báo ngược về: bưng mâm xong, tới lượt chụp, bắt được hoa, cô dâu chú rể chào bàn
   useEffect(() => {
+    music.start();
+    world.setCoupleNames(s.couple.groom, s.couple.bride);
+    setCouple(s.couple);
     world.events = {
       queueChange: setQueueLen,
       trayDone: (id) => {
@@ -102,10 +171,15 @@ export function useGame() {
           world.releasePhoto();
           setCard((c) => (c?.key === key ? null : c));
         };
-        voice.say(GAME.photo(spoken(id), chuc.loi), false, () => setTimeout(release, Math.max(0, GAME.photoMinMs - (Date.now() - shownAt))));
+        voice.say(GAME.photo(spoken(id), chuc.loi, coupleText()), false, () =>
+          setTimeout(release, Math.max(0, GAME.photoMinMs - (Date.now() - shownAt))),
+        );
         setTimeout(release, GAME.photoMaxMs);
       },
       caught: (id) => voice.say(GAME.bouquetCaught(spoken(id)), true),
+      coupleGreet: (id) => {
+        if (s.greetLimit('all') && voice.waiting < 2) voice.say(GAME.coupleGreet(cap(coupleText()), spoken(id)));
+      },
     };
     return () => {
       world.events = {};
@@ -127,20 +201,42 @@ export function useGame() {
     }, GAME.bouquetWindowMs);
   };
 
+  const meet = (id: string, nickname: string, avatar: string) => {
+    const name = safeName(nickname, id);
+    names.current.set(id, name);
+    if (avatar) avatars.current.set(id, avatar);
+    s.recent.note(id, speakableName(name));
+    world.ensure(id, name, avatar);
+    setGuestCount(world.count);
+    if (!s.polledOnce && !s.couple.groom && world.count >= GAME.pollAutoAtGuests) startPoll('groom');
+    return name;
+  };
+
   useLiveEvents({
     onStatus: setStatus,
 
     onChat: (e) => {
       const id = e.username;
-      const name = safeName(e.nickname, id);
-      names.current.set(id, name);
-      if (e.avatar) avatars.current.set(id, e.avatar);
-      s.recent.note(id, speakableName(name));
-      world.ensure(id, name);
-      setGuestCount(world.count);
-
+      const name = meet(id, e.nickname, e.avatar);
       const cmd = parseCommand(e.comment);
       const B = GAME.bubble;
+
+      // đang bầu tên: comment thường được tính là 1 phiếu (mỗi người 1 phiếu)
+      if (!cmd && s.poll) {
+        const cand = pollCandidate(e.comment);
+        if (cand && !s.poll.voted.has(id)) {
+          s.poll.voted.add(id);
+          const key = plain(cand);
+          const v = s.poll.votes.get(key) ?? { name: cand, count: 0 };
+          v.count++;
+          s.poll.votes.set(key, v);
+          const top = [...s.poll.votes.values()].sort((a, b) => b.count - a.count).slice(0, 3);
+          setPoll({ role: s.poll.role, until: s.poll.until, top });
+          world.say(id, `Bầu ${cand}!`, 3000);
+          return;
+        }
+      }
+
       if (!cmd) {
         // comment thường: hiện bong bóng (đã che từ bậy), cầu chúc thì MC chúc lại. Không đọc nguyên văn comment.
         world.say(id, maskBanned(e.comment));
@@ -192,38 +288,26 @@ export function useGame() {
 
     onGift: (e) => {
       const id = e.username;
-      const name = safeName(e.nickname, id);
-      names.current.set(id, name);
-      if (e.avatar) avatars.current.set(id, e.avatar);
-      s.recent.note(id, speakableName(name));
-      world.ensure(id, name);
-      setGuestCount(world.count);
+      const name = meet(id, e.nickname, e.avatar);
       const coins = e.diamondCount * e.repeatCount;
       setLastGift({ ...e, nickname: name, coins });
 
-      // Hiệu ứng chung cho cả rạp, không đổi luật chơi
-      if (coins >= GAME.giftHuge) {
-        world.fireworks(10);
-        world.coupleDance(15000);
-        world.balloon(20);
-        world.confetti(160);
-      } else if (coins >= GAME.giftBig) {
-        world.fireworks(4);
-        world.coupleDance(8000);
-        world.balloon(10);
-        world.confetti(100);
-      } else if (coins >= GAME.giftMid) {
-        world.balloon(6);
-        world.confetti(70);
-      } else world.confetti(36);
-
-      // MC cảm ơn quà trước mọi câu khác
-      if (s.gifts.shouldThank(id, coins, voice.waitingPriority)) {
-        const n = speakableName(name);
-        voice.say(coins >= GAME.giftBig ? GAME.thankBigGift(n) : GAME.thankGift(n), true);
-        const wish = pick(GAME.giftWishes);
-        if (wish) voice.say(wish, true);
+      // Hiệu ứng chung cho cả rạp theo cấp quà, không đổi luật chơi
+      const tier = GAME.giftTiers.find((t) => coins >= t.min) ?? GAME.giftTiers[GAME.giftTiers.length - 1];
+      for (const fx of tier.fx) {
+        if (fx === 'confetti') world.confetti(40);
+        if (fx === 'balloon') world.balloon(coins >= 99 ? 14 : 8);
+        if (fx === 'envelopes') world.envelopes(coins >= 299 ? 70 : 40);
+        if (fx === 'fireworks') world.fireworks(coins >= 999 ? 10 : 4);
+        if (fx === 'couple') world.coupleDance(coins >= 999 ? 15000 : 8000);
+        if (fx === 'car') world.weddingCar();
+        if (fx === 'longphuong') world.longPhuong();
+        if (fx === 'gold') world.goldRain(coins >= 4999 ? 400 : 220);
+        if (fx === 'party') world.partyAll(coins >= 4999 ? 20000 : 12000);
       }
+
+      // MC hô cảm ơn quà trước mọi câu khác
+      if (s.gifts.shouldThank(id, coins, voice.waitingPriority)) voice.say(pick(tier.lines)!(speakableName(name)), true);
     },
 
     onMember: (e) => {
@@ -239,9 +323,9 @@ export function useGame() {
       if (likeBase.current === null) likeBase.current = e.totalLikes - e.likeCount;
       if (e.totalLikes - likeBase.current >= GAME.likesPerBoost) {
         likeBase.current += GAME.likesPerBoost;
-        world.cheerAll();
-        world.confetti(50);
-        voice.say(GAME.boostLine);
+        world.partyAll(10000);
+        world.confetti(60);
+        voice.say(GAME.boostLine, true);
       }
       setLikeProgress(Math.max(0, e.totalLikes - likeBase.current));
     },
@@ -249,8 +333,11 @@ export function useGame() {
     onControl: (c) => {
       if (c.action === 'setName' && c.text) setChannelName(c.text);
       if (c.action === 'custom' && c.text === 'bouquet') startBouquet();
+      if (c.action === 'custom' && c.text === 'poll') startPoll('groom');
+      if (c.action === 'custom' && c.text === 'clearCouple') applyCouple({ groom: '', bride: '' });
       if (!IS_STAGE) return; // chỉ trang stage làm theo lệnh có tiếng, tránh 2 giọng
       if (c.action === 'speak' && c.text) voice.say(c.text, true);
+      if (c.action === 'custom' && c.text === 'music') music.toggle();
       if (c.action === 'setRate' && c.text) voice.rate = Number(c.text) || 1;
       if (c.action === 'reset') {
         voice.stop();
@@ -267,7 +354,32 @@ export function useGame() {
     },
   });
 
-  // Tung hoa định kỳ, nhắc chia sẻ, đọc khi im lâu, lưu tiến độ
+  // MC rảnh là nói: gọi tên khách, kể rạp đang vui cỡ nào, hỏi khán giả
+  const chatterLine = (): string | null => {
+    const C = GAME.chatter;
+    const ct = coupleText();
+    const opts: (() => string | null)[] = [
+      () => {
+        const id = world.someGuests(1)[0];
+        if (!id || world.inQueue(id)) return null;
+        const c = s.guests.canPhoto(id);
+        return c.ok ? C.callPhoto(spoken(id)) : c.why === 'needTray' ? C.callTray(spoken(id), ct) : null;
+      },
+      () => (world.count >= 3 ? C.crowd(world.count) : null),
+      () => (world.countTask('dance') >= 2 ? C.dancing(world.countTask('dance')) : null),
+      () => (world.coupleMingling ? C.mingle(cap(ct)) : null),
+      () => (world.queueLength >= 2 ? C.queue(world.queueLength) : null),
+      () => pick(C.questions) ?? null,
+      () => pick(C.questions) ?? null,
+    ];
+    for (let i = 0; i < 5; i++) {
+      const line = opts[Math.floor(Math.random() * opts.length)]();
+      if (line) return line;
+    }
+    return null;
+  };
+
+  // Tung hoa định kỳ, MC nói liên tục, nhắc chia sẻ, lưu tiến độ
   useEffect(() => {
     const timers: ReturnType<typeof setInterval>[] = [];
     timers.push(setInterval(() => world.count > 0 && startBouquet(), GAME.bouquetEveryMs));
@@ -282,8 +394,10 @@ export function useGame() {
       );
       timers.push(
         setInterval(() => {
-          if (voice.quietForMs() >= GAME.idleAfterMs) voice.say(pick(GAME.idleLines)!);
-        }, 15_000),
+          if (s.poll || voice.quietForMs() < GAME.chatterQuietMs) return;
+          const line = chatterLine();
+          if (line) voice.say(line);
+        }, 2000),
       );
     }
     return () => timers.forEach(clearInterval);
@@ -295,7 +409,7 @@ export function useGame() {
     return () => clearTimeout(t);
   }, [lastGift]);
 
-  return { status, channelName, queueLen, card, lastGift, likeProgress, bouquetUntil, guestCount };
+  return { status, channelName, queueLen, card, lastGift, likeProgress, bouquetUntil, guestCount, poll, couple };
 }
 
 export type GameState = ReturnType<typeof useGame>;
