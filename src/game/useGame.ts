@@ -378,7 +378,7 @@ export function useGame() {
       if (c.action === 'custom' && c.text === 'clearCouple') applyCouple({ groom: '', bride: '' });
       if (!IS_STAGE) return; // chỉ trang stage làm theo lệnh có tiếng, tránh 2 giọng
       if (c.action === 'speak' && c.text) voice.say(c.text, true);
-      if (c.action === 'custom' && c.text === 'music') music.toggle();
+      if (c.action === 'custom' && (c.text === 'music:on' || c.text === 'music:off')) music.set(c.text === 'music:on');
       if (c.action === 'setRate' && c.text) voice.rate = Number(c.text) || 1;
       if (c.action === 'reset') {
         voice.stop();

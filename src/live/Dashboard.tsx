@@ -64,16 +64,18 @@ export function Dashboard({
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 p-4 text-slate-100 md:p-6">
-      <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-[1fr_auto]">
-        <div className="space-y-4">
+    // Gọn trong 1 màn hình: cột trái là nút (tự cuộn nếu thiếu chỗ), cột phải là bản xem trước cao bằng màn hình
+    <div className="h-screen overflow-hidden bg-slate-950 p-3 text-sm text-slate-100">
+      <div className="mx-auto flex h-full max-w-[1500px] gap-3">
+        <div className="min-w-0 flex-1 space-y-3 overflow-y-auto pr-1">
           <Card title="Kết nối TikTok LIVE">
-            <div className="flex flex-wrap gap-2">
+            <div className="flex gap-2">
               <input
-                className="min-w-0 flex-1 rounded-lg bg-slate-800 px-3 py-2"
+                className="min-w-0 flex-1 rounded-lg bg-slate-800 px-3 py-1.5"
                 placeholder="username TikTok (không cần @)"
                 value={user}
                 onChange={(e) => setUser(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && user.trim() && connect()}
               />
               <Btn onClick={connect} disabled={busy || !user.trim()}>
                 {busy ? 'Đang nối...' : 'Kết nối'}
@@ -82,46 +84,28 @@ export function Dashboard({
                 Ngắt
               </Btn>
             </div>
-            <div className="mt-3 text-sm">
-              Trạng thái:{' '}
+            <div className="mt-2 flex flex-wrap gap-x-3 text-xs">
               {status?.isConnected ? (
                 <span className="text-emerald-400">
-                  Đang live @{status.username} · {status.viewerCount} người xem · {status.totalLikes} tim
+                  ● Đang live @{status.username} · {status.viewerCount} người xem · {status.totalLikes} tim
                 </span>
               ) : status?.isConnecting ? (
-                <span className="text-amber-400">Đang kết nối...</span>
+                <span className="text-amber-400">● Đang kết nối...</span>
               ) : (
-                <span className="text-slate-400">Chưa kết nối</span>
+                <span className="text-slate-400">● Chưa kết nối</span>
               )}
+              <span className="text-slate-500">
+                LIVE Studio: <b className="text-slate-300">http://lvh.me:3000/?view=stage</b> · 1080×1920
+              </span>
             </div>
-            {(msg || status?.error) && <div className="mt-1 text-sm text-amber-300">{msg || status?.error}</div>}
-            <div className="mt-3 rounded-lg bg-slate-800/60 p-3 text-xs text-slate-400">
-              Link cho TikTok LIVE Studio: <b className="text-slate-200">http://lvh.me:3000/?view=stage</b> · 1080 × 1920.
-              Chỉ trang đó phát tiếng.
-            </div>
+            {(msg || status?.error) && <div className="mt-1 text-xs text-amber-300">{msg || status?.error}</div>}
           </Card>
 
           <Card title="Giọng đọc trên stage">
-            <div className="mb-3 flex flex-wrap items-center gap-2 text-sm">
-              <span>
-                Tên kênh: <b className="text-amber-300">{channelName}</b>
-              </span>
-              <input
-                className="min-w-0 flex-1 rounded-lg bg-slate-800 px-3 py-2"
-                placeholder="Đổi tên kênh mà giọng đọc xưng..."
-                maxLength={40}
-                value={nameText}
-                onChange={(e) => setNameText(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && nameText.trim() && saveName()}
-              />
-              <Btn onClick={saveName} disabled={!nameText.trim()}>
-                Lưu tên
-              </Btn>
-            </div>
             <div className="flex gap-2">
               <input
-                className="min-w-0 flex-1 rounded-lg bg-slate-800 px-3 py-2"
-                placeholder="Gõ câu muốn đọc ngay..."
+                className="min-w-0 flex-1 rounded-lg bg-slate-800 px-3 py-1.5"
+                placeholder="Gõ câu muốn MC đọc ngay..."
                 value={speakText}
                 onChange={(e) => setSpeakText(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && speakText.trim() && speak()}
@@ -130,44 +114,45 @@ export function Dashboard({
                 Đọc ngay
               </Btn>
             </div>
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-              Tốc độ:
-              {['0.85', '1', '1.15', '1.3'].map((r) => (
+            <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
+              <span className="text-slate-400">Tốc độ</span>
+              {['0.85', '1', '1.1', '1.25'].map((r) => (
                 <Btn key={r} tone="ghost" onClick={() => sendControl('setRate', r)}>
                   {r}×
                 </Btn>
               ))}
+              <span className="ml-2 text-slate-400">Tên kênh</span>
+              <input
+                className="w-32 rounded-lg bg-slate-800 px-2 py-1"
+                placeholder={channelName}
+                maxLength={40}
+                value={nameText}
+                onChange={(e) => setNameText(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && nameText.trim() && saveName()}
+              />
+              <Btn tone="ghost" onClick={saveName} disabled={!nameText.trim()}>
+                Lưu
+              </Btn>
+              <span className="flex-1" />
               <Btn tone="danger" onClick={() => confirmReset()}>
                 Reset game
               </Btn>
             </div>
           </Card>
 
-          <Card title="Giả lập (test khi chưa live)">
-            <div className="flex flex-wrap gap-2">
+          {extra}
+
+          <details className="rounded-2xl bg-slate-900 p-3 ring-1 ring-slate-800">
+            <summary className="cursor-pointer font-semibold">Giả lập chung (người vào, follow, combo quà...)</summary>
+            <div className="mt-2 flex flex-wrap gap-1.5">
               <Btn tone="ghost" onClick={() => emitTest('member', pick())}>
                 👋 Người vào
-              </Btn>
-              <Btn tone="ghost" onClick={() => emitTest('chat', { ...pick(), comment: 'join' })}>
-                ✋ Gõ "join"
               </Btn>
               <Btn tone="ghost" onClick={() => emitTest('chat', { ...pick(), comment: 'Live hay quá' })}>
                 💬 Comment
               </Btn>
               <Btn tone="ghost" onClick={() => emitTest('chat', { ...pick(), comment: 'mong mai thi được điểm cao' })}>
-                🙏 Comment cầu chúc
-              </Btn>
-              <Btn
-                tone="ghost"
-                onClick={() => emitTest('gift', { ...pick(), giftName: 'Hoa hồng', giftId: 5655, diamondCount: 1, repeatCount: 5 })}
-              >
-                🌹 5 Hoa hồng
-              </Btn>
-              <Btn
-                tone="ghost"
-                onClick={() => emitTest('gift', { ...pick(), giftName: 'Sư tử', giftId: 6369, diamondCount: 29999, repeatCount: 1 })}
-              >
-                🦁 Quà to
+                🙏 Cầu chúc
               </Btn>
               <Btn tone="ghost" onClick={() => comboSameUser()}>
                 🔁 1 người tặng 3 lần liền
@@ -175,18 +160,13 @@ export function Dashboard({
               <Btn tone="ghost" onClick={() => emitTest('follow', pick())}>
                 ➕ Follow
               </Btn>
-              <Btn tone="ghost" onClick={() => emitTest('like', { ...pick(), likeCount: 100 })}>
-                ❤️ 100 tim
-              </Btn>
             </div>
             <p className="mt-2 text-xs text-slate-500">Sự kiện giả đi tới mọi trang đang mở, kể cả stage trong LIVE Studio.</p>
-          </Card>
-
-          {extra}
+          </details>
         </div>
 
-        <div className="justify-self-center">
-          <div className="mb-2 text-center text-sm text-slate-400">Xem trước (im lặng)</div>
+        <div className="flex flex-none flex-col items-center">
+          <div className="mb-1 text-xs text-slate-400">Xem trước (im lặng)</div>
           <div className="overflow-hidden rounded-2xl ring-1 ring-slate-700">{preview}</div>
         </div>
       </div>
@@ -209,8 +189,8 @@ function confirmReset() {
 
 function Card({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="rounded-2xl bg-slate-900 p-4 ring-1 ring-slate-800">
-      <h2 className="mb-3 font-semibold">{title}</h2>
+    <section className="rounded-2xl bg-slate-900 p-3 ring-1 ring-slate-800">
+      <h2 className="mb-2 font-semibold">{title}</h2>
       {children}
     </section>
   );
@@ -233,7 +213,7 @@ function Btn({
     danger: 'bg-rose-700 hover:bg-rose-600',
   }[tone];
   return (
-    <button onClick={onClick} disabled={disabled} className={`rounded-lg px-3 py-2 text-sm font-medium disabled:opacity-40 ${cls}`}>
+    <button onClick={onClick} disabled={disabled} className={`rounded-lg px-2.5 py-1.5 text-xs font-medium disabled:opacity-40 ${cls}`}>
       {children}
     </button>
   );

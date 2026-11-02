@@ -19,6 +19,7 @@ const many = (n: number, f: (i: number) => void) => {
 
 export function GameControls() {
   const [auto, setAuto] = useState(false);
+  const [musicOn, setMusicOn] = useState(true); // trang stage mở lên là nhạc bật
 
   // Live giả: mỗi 0,8 giây 1 khách làm 1 việc; ai bưng đủ 2 mâm thì đi chụp hình
   useEffect(() => {
@@ -43,60 +44,72 @@ export function GameControls() {
   }, [auto]);
 
   return (
-    <section className="rounded-2xl bg-slate-900 p-4 ring-1 ring-slate-800">
-      <h2 className="mb-3 font-semibold">Giả lập Đám Cưới</h2>
-      <div className="flex flex-wrap gap-2">
-        <B onClick={() => setAuto((a) => !a)} on={auto}>
-          {auto ? '⏸ Dừng live giả' : '▶ Live giả (40 khách tự chơi)'}
+    <section className="space-y-2 rounded-2xl bg-slate-900 p-3 ring-1 ring-slate-800">
+      <Row label="Điều khiển">
+        <B onClick={() => void sendControl('custom', 'poll')}>💒 Bầu chú rể + cô dâu</B>
+        <B onClick={() => void sendControl('custom', 'ceremony')}>🎤 Khai mạc lễ cưới</B>
+        <B onClick={() => void sendControl('custom', 'bouquet')}>💐 Tung hoa ngay</B>
+        <B onClick={() => void sendControl('custom', 'clearCouple')}>✖ Xoá tên cô dâu chú rể</B>
+        <B
+          on={musicOn}
+          onClick={() => {
+            const next = !musicOn;
+            setMusicOn(next);
+            void sendControl('custom', next ? 'music:on' : 'music:off');
+          }}
+        >
+          {musicOn ? '🎵 Nhạc nền: BẬT' : '🔇 Nhạc nền: TẮT'}
         </B>
-        <B onClick={() => many(5, () => chat(anyone(), CHATS[Math.floor(Math.random() * CHATS.length)]))}>💬 5 khách chúc mừng</B>
-        <B onClick={() => chat(anyone(), 'bưng mâm')}>🍲 1 người bưng mâm</B>
+        <B onClick={() => testVoice()}>🔊 Thử giọng MC (trang này)</B>
+      </Row>
+      <Row label="Thử khách">
+        <B onClick={() => setAuto((a) => !a)} on={auto}>
+          {auto ? '⏸ Dừng live giả' : '▶ Live giả 40 khách'}
+        </B>
+        <B onClick={() => many(5, () => chat(anyone(), CHATS[Math.floor(Math.random() * CHATS.length)]))}>💬 5 chúc mừng</B>
+        <B onClick={() => chat(anyone(), 'bưng mâm')}>🍲 Bưng mâm</B>
         <B
           onClick={() => {
             const w = anyone();
             chat(w, 'bưng mâm');
-            setTimeout(() => chat(w, 'bưng mâm'), 16000);
-            setTimeout(() => chat(w, 'chụp hình'), 32000);
+            setTimeout(() => chat(w, 'bưng mâm'), 3000);
+            setTimeout(() => chat(w, 'chụp hình'), 36000);
           }}
         >
-          📸 1 người bưng 2 mâm rồi chụp (~35s)
+          📸 Bưng 2 mâm rồi chụp
         </B>
-        <B onClick={() => chat(anyone(), 'chụp hình')}>📸 Gõ chụp hình (chưa bưng)</B>
-        <B onClick={() => many(10, () => chat(anyone(), 'dzô'))}>🥂 10 người dzô</B>
-        <B onClick={() => many(8, () => chat(anyone(), 'quẩy'))}>💃 8 người quẩy</B>
+        <B onClick={() => many(10, () => chat(anyone(), 'dzô'))}>🥂 10 dzô</B>
+        <B onClick={() => many(8, () => chat(anyone(), 'quẩy'))}>💃 8 quẩy</B>
+        <B onClick={() => many(6, () => chat(anyone(), 'bắt hoa'))}>💐 6 bắt hoa</B>
         <B
           onClick={() => {
-            void sendControl('custom', 'bouquet');
-            many(6, () => setTimeout(() => chat(anyone(), 'bắt hoa'), 1500));
-          }}
-        >
-          💐 Tung hoa ngay + 6 người bắt
-        </B>
-        <B onClick={() => gift(1, 'Hoa hồng')}>🌹 1 xu</B>
-        <B onClick={() => gift(10, 'Kẹo')}>🎈 10 xu</B>
-        <B onClick={() => gift(30, 'Bánh donut')}>🧧 30 xu (phong bì)</B>
-        <B onClick={() => gift(99, 'Bắn tim')}>🎆 99 xu (pháo hoa)</B>
-        <B onClick={() => gift(299, 'Xe')}>🚗 299 xu (xe hoa)</B>
-        <B onClick={() => gift(1000, 'Thiên hà')}>🐉 1000 xu (long phượng)</B>
-        <B onClick={() => gift(5000, 'Sư tử')}>💍 5000 xu (đại gia)</B>
-        <B onClick={() => emitTest('like', { ...anyone(), likeCount: 300 })}>❤️ 300 tim (cả rạp quẩy)</B>
-        <B
-          onClick={() => {
-            void sendControl('custom', 'poll');
             const votes = ['Tuấn', 'Tuấn', 'anh Long', 'Tuấn', 'Long'];
-            votes.forEach((v, i) => setTimeout(() => chat(POOL[i + 5], v), 4000 + i * 900));
-            ['Lan', 'chị Lan', 'Hà', 'Lan'].forEach((v, i) => setTimeout(() => chat(POOL[i + 12], v), 48_000 + i * 900));
+            votes.forEach((v, i) => setTimeout(() => chat(POOL[i + 5], v), i * 700));
           }}
         >
-          💒 Bầu chú rể + cô dâu (có phiếu giả)
+          🗳 5 phiếu bầu giả
         </B>
-        <B onClick={() => void sendControl('custom', 'ceremony')}>🎤 Khai mạc lễ cưới (MC đọc lời dẫn)</B>
-        <B onClick={() => void sendControl('custom', 'clearCouple')}>✖ Xoá tên cô dâu chú rể</B>
-        <B onClick={() => void sendControl('custom', 'music')}>🎵 Bật/tắt nhạc nền (trên stage)</B>
-        <B onClick={() => testVoice()}>🔊 Thử giọng MC (chỉ trang này nghe)</B>
-      </div>
-      <p className="mt-2 text-xs text-slate-500">Bưng 2 mâm được chụp lần đầu, sau đó 1 mâm. Tung hoa tự chạy mỗi 10 phút. Số liệu ở src/game/config.ts.</p>
+      </Row>
+      <Row label="Quà / tim">
+        <B onClick={() => gift(1, 'Hoa hồng')}>🌹 1</B>
+        <B onClick={() => gift(10, 'Kẹo')}>🎈 10</B>
+        <B onClick={() => gift(30, 'Bánh donut')}>🧧 30</B>
+        <B onClick={() => gift(99, 'Bắn tim')}>🎆 99</B>
+        <B onClick={() => gift(299, 'Xe')}>🚗 299</B>
+        <B onClick={() => gift(1000, 'Thiên hà')}>🐉 1000</B>
+        <B onClick={() => gift(5000, 'Sư tử')}>💍 5000</B>
+        <B onClick={() => emitTest('like', { ...anyone(), likeCount: 300 })}>❤️ 300 tim</B>
+      </Row>
     </section>
+  );
+}
+
+function Row({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <span className="w-20 flex-none text-xs font-semibold text-slate-400">{label}</span>
+      {children}
+    </div>
   );
 }
 
@@ -123,7 +136,7 @@ async function testVoice() {
 
 function B({ children, onClick, on }: { children: ReactNode; onClick: () => void; on?: boolean }) {
   return (
-    <button onClick={onClick} className={`rounded-lg px-3 py-2 text-sm font-medium ${on ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 hover:bg-slate-700'}`}>
+    <button onClick={onClick} className={`rounded-lg px-2.5 py-1.5 text-xs font-medium ${on ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 hover:bg-slate-700'}`}>
       {children}
     </button>
   );

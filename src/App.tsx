@@ -25,7 +25,7 @@ export default function App() {
       status={game.status}
       channelName={game.channelName}
       preview={
-        <StageFrame maxHeight={720}>
+        <StageFrame maxHeight={window.innerHeight - 40}>
           <GameStage game={game} />
         </StageFrame>
       }
