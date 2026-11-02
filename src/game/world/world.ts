@@ -22,6 +22,7 @@ import {
   WANDER,
   type Table,
 } from './layout';
+import { Pets } from './pets';
 import { drawDisco, drawDragon, drawGate, drawLights, drawPartyWash, drawPhoenix, drawSteam, drawTable, drawWeddingCar, paintBackground } from './scene';
 
 type Step =
@@ -143,6 +144,7 @@ class World {
   private t = 0;
   private eatTimer = 0;
   private extraSeq = 0;
+  private pets = new Pets();
   // đám đông đứng xem: chỉ đổi động tác, không đi lại
   private spectators = SPECTATORS.map((p, i) => {
     const g = makeGuest(`fan-${i}`, lookFor(`fan-${i}`), p.x, p.y, true);
@@ -849,6 +851,7 @@ class World {
     }
 
     this.updateCouple(dt);
+    this.pets.update(dt);
     for (const g of this.spectators) {
       g.stepT -= dt * 1000;
       if (g.stepT <= 0) {
@@ -1003,6 +1006,7 @@ class World {
       const showName = !g.npc && (crowd < 70 || now - g.lastActive < 90_000 || g.task === 'photo' || g.task === 'queue');
       ds.push({ y: g.y, f: () => this.drawPerson(ctx, g, pose, g.facing, scaleAt(g.y), showName) });
     }
+    ds.push(...this.pets.drawables(ctx));
     ds.sort((a, b) => a.y - b.y);
     for (const d of ds) d.f();
 

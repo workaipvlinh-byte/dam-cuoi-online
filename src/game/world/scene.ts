@@ -5,6 +5,68 @@ import { DANCE, H, STAGE, TABLE_RX, TABLE_RY, W, type Table } from './layout';
 
 const VP = { x: 540, y: 160 }; // điểm tụ của sân gạch
 
+const ROSES = ['#d62f45', '#e8466b', '#f49ab2', '#fff5f2', '#c2233a'];
+
+/** Hoa hồng nhìn từ trên: các vòng cánh xoắn vào tâm */
+export function drawRose(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, c: string) {
+  ctx.fillStyle = c;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(90,10,25,0.35)';
+  ctx.lineWidth = Math.max(1, r * 0.14);
+  ctx.beginPath();
+  for (let a = 0; a < Math.PI * 5; a += 0.3) {
+    const rr = r * (1 - a / (Math.PI * 5.4));
+    const px = x + Math.cos(a) * rr * 0.8;
+    const py = y + Math.sin(a) * rr * 0.8;
+    if (a === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+}
+
+function leaf(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, a: number) {
+  ctx.fillStyle = '#5f9a55';
+  ctx.beginPath();
+  ctx.ellipse(x, y, s, s * 0.45, a, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+/** Bụi hồng nhỏ: vài lá + 3-5 bông */
+function roseBush(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, seed: number) {
+  for (let i = 0; i < 4; i++) leaf(ctx, x + Math.cos(i * 1.7 + seed) * s * 1.1, y + Math.sin(i * 1.7 + seed) * s * 0.5, s * 0.7, i + seed);
+  const n = 3 + (seed % 3);
+  for (let i = 0; i < n; i++)
+    drawRose(ctx, x + Math.cos(i * 2.3 + seed) * s * 0.8, y - s * 0.3 + Math.sin(i * 2.3 + seed) * s * 0.4, s * 0.55, ROSES[(seed + i) % ROSES.length]);
+}
+
+/** Hoa hồng trang trí khắp rạp (vẽ 1 lần vào nền) */
+function paintRoses(ctx: CanvasRenderingContext2D) {
+  // dọc hai mép thảm đỏ
+  for (let k = 0, y = 880; y < 1660; k++, y += 70) {
+    const t = (y - 860) / (H - 860);
+    const s = 9 + t * 7;
+    roseBush(ctx, 505 - 40 * t - s, y, s, k);
+    roseBush(ctx, 575 + 40 * t + s, y, s, k + 3);
+  }
+  // mép trước sân khấu
+  for (let x = 285, k = 0; x < 800; x += 38, k++) roseBush(ctx, x, 846, 10, k);
+  // dây hồng trên vải rạp
+  for (let x = 20, k = 0; x < W; x += 30, k++) drawRose(ctx, x, 292 + Math.sin(k) * 4, 9, ROSES[k % ROSES.length]);
+  // hồng quấn cột rạp
+  for (const x of [22, 1058]) for (let y = 360, k = 0; y < 1680; y += 70, k++) {
+    leaf(ctx, x - 10, y + 6, 8, 0.6);
+    drawRose(ctx, x, y, 10, ROSES[k % 3]);
+  }
+  // hai chậu hồng lớn hai bên sân khấu
+  for (const x of [215, 865]) {
+    ctx.fillStyle = '#b97e4c';
+    ctx.fillRect(x - 26, 790, 52, 46);
+    for (let i = 0; i < 9; i++) roseBush(ctx, x + Math.cos(i * 0.7) * 20, 770 - Math.sin(i * 1.3) * 22 - (i % 3) * 8, 11, i);
+  }
+}
+
 export function paintBackground(ctx: CanvasRenderingContext2D) {
   // trời
   let g = ctx.createLinearGradient(0, 0, 0, 320);
@@ -235,6 +297,7 @@ export function paintBackground(ctx: CanvasRenderingContext2D) {
   }
   ctx.fillStyle = '#f2a7b8';
   ctx.fillRect(0, 280, W, 10);
+  paintRoses(ctx); // vẽ sau cùng để dây hồng nằm trên vải rạp
 }
 
 // Dây đèn bóng tròn trên rạp
@@ -321,6 +384,12 @@ export function drawTable(ctx: CanvasRenderingContext2D, tb: Table, glow: number
     ctx.fillStyle = 'rgba(250,200,90,0.9)';
     ctx.fillRect(x + Math.cos(a) * 50 - 3, y + Math.sin(a) * 17 - 9, 6, 9);
   }
+  // bình hồng giữa bàn
+  ctx.fillStyle = 'rgba(200,230,255,0.85)';
+  ctx.fillRect(x - 5, y - 16, 10, 12);
+  drawRose(ctx, x - 5, y - 20, 6, '#d62f45');
+  drawRose(ctx, x + 5, y - 21, 6, '#f49ab2');
+  drawRose(ctx, x, y - 27, 6, '#e8466b');
   const spots = [-34, 34, 0];
   for (let i = 0; i < tb.food; i++) drawTray(ctx, x + spots[i], y + (i === 2 ? -10 : 2), 1.05);
 }
