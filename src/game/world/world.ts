@@ -132,6 +132,7 @@ class World {
   private partyUntil = 0;
   private danceAllUntil = 0;
   private coupleDanceUntil = 0;
+  private ringUntil = 0;
   private carUntil = 0;
   private flyUntil = 0;
   private tableGlow = new Map<Table, number>();
@@ -215,6 +216,33 @@ class World {
       g.plan.push({ k: 'walk', x: spot.x, y: spot.y, run: true });
       g.started = false;
     }
+  }
+
+  /** Trao nhẫn: hai người quay vào nhau, nhẫn vàng lấp lánh bay lên giữa */
+  ringExchange() {
+    this.ringUntil = Date.now() + 6000;
+    this.hearts((GROOM.x + BRIDE.x) / 2, GROOM.y - 130, 18);
+    this.fireworks(3);
+  }
+
+  /** Khai mạc: cô dâu chú rể xuất hiện ở cổng hoa, đi thảm đỏ lên sân khấu */
+  coupleEntrance() {
+    this.coupleMode = 'return';
+    for (const [g, spot, dx] of [
+      [this.groom, GROOM, -22],
+      [this.bride, BRIDE, 22],
+    ] as const) {
+      g.x = GATE.x + dx;
+      g.y = GATE.y - 40;
+      g.plan = [
+        { k: 'walk', x: GATE.x + dx, y: 1500 },
+        { k: 'do', pose: 'wave', ms: 1500, face: 'front' },
+        { k: 'walk', x: 540 + dx, y: 880 },
+        { k: 'walk', x: spot.x, y: spot.y },
+      ];
+      g.started = false;
+    }
+    this.hearts(GATE.x, GATE.y - 160, 14);
   }
 
   private coupleGoMingle() {
@@ -957,9 +985,12 @@ class World {
       brideFace = bq.phase !== 'done' ? 'back' : 'front';
       bridePose = bq.phase === 'fly' ? 'throw' : bq.phase === 'done' ? 'clap' : 'stand';
     }
+    const ringing = now < this.ringUntil && onStage;
+    const groomFace: Facing = ringing ? 'right' : this.groom.facing;
+    if (ringing) brideFace = 'left';
     const coupleScale = (g: Guest) => scaleAt(g.y) * 1.25; // cô dâu chú rể to hơn khách cho nổi
-    ds.push({ y: this.groom.y, f: () => this.drawPerson(ctx, this.groom, groomPose, this.groom.facing, coupleScale(this.groom), true) });
-    ds.push({ y: this.bride.y, f: () => this.drawPerson(ctx, this.bride, bridePose, brideFace, coupleScale(this.bride), true) });
+    ds.push({ y: this.groom.y, f: () => this.drawPerson(ctx, this.groom, ringing ? 'stand' : groomPose, groomFace, coupleScale(this.groom), true) });
+    ds.push({ y: this.bride.y, f: () => this.drawPerson(ctx, this.bride, ringing ? 'stand' : bridePose, brideFace, coupleScale(this.bride), true) });
 
     for (const g of this.spectators) {
       const pose: Pose = danceAll || party ? 'dance' : g.pose;
@@ -983,6 +1014,29 @@ class World {
       const x = bq.from.x + (tx - bq.from.x) * k;
       const y = bq.from.y + (ty - bq.from.y) * k - Math.sin(k * Math.PI) * 260;
       drawBouquet(ctx, x, y, 2.6);
+    }
+
+    if (ringing) {
+      const k = 1 - (this.ringUntil - now) / 6000;
+      const rx = (this.groom.x + this.bride.x) / 2;
+      const ry = this.groom.y - 120 - Math.min(1, k * 3) * 40;
+      const glow = ctx.createRadialGradient(rx, ry, 0, rx, ry, 70);
+      glow.addColorStop(0, 'rgba(255,230,140,0.75)');
+      glow.addColorStop(1, 'rgba(255,230,140,0)');
+      ctx.fillStyle = glow;
+      ctx.fillRect(rx - 70, ry - 70, 140, 140);
+      ctx.strokeStyle = '#e8b23f';
+      ctx.lineWidth = 7;
+      ctx.beginPath();
+      ctx.ellipse(rx, ry, 20, 20 * Math.abs(Math.cos(this.t * 2)) + 4, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = '#bfe9ff';
+      ctx.beginPath();
+      ctx.moveTo(rx, ry - 30);
+      ctx.lineTo(rx + 7, ry - 21);
+      ctx.lineTo(rx, ry - 14);
+      ctx.lineTo(rx - 7, ry - 21);
+      ctx.fill();
     }
 
     drawGate(ctx);

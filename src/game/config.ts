@@ -31,10 +31,14 @@ export const GAME = {
   // ---------- Câu MC ----------
   greetEveryMs: 6000,
   namesPerGreeting: 3,
+  // Người lướt vào live: MC đọc tên + mời vào ăn cưới (gom tối đa 3 tên mỗi câu)
   greetings: [
-    (names: string) => `Xin chào ${names}! Mời vào rạp, cỗ đang dọn, nhạc đang lên rồi!`,
-    (names: string) => `A, ${names} tới rồi kìa! Vào ngồi chơi, ăn cỗ cho vui nha!`,
-    (names: string) => `Rạp cưới chào ${names}! Ai chưa có chỗ thì gõ dzô để ngồi vào bàn nha!`,
+    (names: string) => `Ơ kìa, ${names} vừa ghé ngang! Vào ăn cưới luôn đi, comment một câu là có ghế ngồi liền!`,
+    (names: string) => `${names} ơi, đừng lướt qua nha! Nhà có đám cưới, mời vào ăn cỗ, cụng ly cho vui!`,
+    (names: string) => `Chào ${names}! Rạp cưới còn ghế trống nè, vào comment một câu là thành khách mời liền!`,
+    (names: string) => `A, ${names} tới đúng lúc cỗ vừa dọn ra! Vào ngồi đi, gõ dô là có ly liền!`,
+    (names: string) => `Ui, ${names} đi ngang đám cưới mà không vô là tiếc lắm đó! Comment một câu vào rạp liền nha!`,
+    (names: string) => `Mời ${names} vào ăn cưới! Bưng hai mâm là được lên chụp hình với cô dâu chú rể luôn!`,
   ],
 
   giftThanksCooldownMs: 30_000,
@@ -126,6 +130,35 @@ export const GAME = {
   pollWin: (role: string, name: string) => `Chốt rồi! ${role} hôm nay là ${name}! | ^^Hoan hô!`,
   pollNone: (role: string) => `Chưa ai bầu ${role} hết, thôi giữ bí mật nha!`,
 
+  // ---------- Khai mạc lễ cưới (lời dẫn của chủ kênh) ----------
+  // Chạy sau khi bầu xong tên, hoặc bấm nút ở trang điều khiển. Tới câu cuối thì cô dâu chú rể đi thảm đỏ lên sân khấu.
+  ceremony: {
+    // Lời mở đầu: 2 bản, mỗi lần khai mạc đổi bản. Sau đó là intro (đi thảm đỏ), trao nhẫn, cảm ơn, mời tiệc.
+    openings: [
+      (groom: string, bride: string) => [
+        'Kính thưa toàn thể các cụ, các ông, các bà, cô dì chú bác, anh chị em hai bên nội ngoại, cùng toàn thể bạn bè thân thiết của cô dâu và chú rể!',
+        'Lời đầu tiên, cho phép MC thay mặt hai bên gia đình gửi đến toàn thể quý vị lời chào trân trọng nhất, cùng lời chúc sức khỏe và hạnh phúc!',
+        `Kính thưa quý vị, trai khôn dựng vợ, gái lớn gả chồng. Sau thời gian tìm hiểu, thương yêu và gắn bó, hôm nay ngày lành tháng tốt, hai bên gia đình chính thức tổ chức lễ thành hôn cho hai bạn ${groom} và ${bride}.`,
+        'Để có ngày vui trọn vẹn hôm nay, chúng ta không thể quên công ơn sinh thành, dưỡng dục của các bậc làm cha làm mẹ. Xin trân trọng gửi lời cảm ơn tới ông bà thân sinh hai bên nhà trai và nhà gái!',
+      ],
+      (groom: string, bride: string) => [
+        `Vâng, rất hân hoan chào đón toàn thể quý vị quan khách, cùng quan viên hai họ đã có mặt trong buổi lễ thành hôn của chú rể ${groom} và cô dâu ${bride}!`,
+        'Lời nói đầu tiên, cho phép MC thay mặt những người thực hiện chương trình gửi đến quý vị lời chúc sức khỏe, lời chào thân thương và trân trọng nhất!',
+        'Quý vị thân mến! Từ ngàn xưa đến bây giờ và mãi mãi sau này, tình yêu luôn là một câu chuyện dài, nhiều biến cố, đầy cảm xúc và vô số màu sắc.',
+        'Khi hai trái tim đã hòa chung một nhịp đập, cặp đôi nào cũng muốn về chung một mái ấm, như chim cùng một cánh, như cây cùng một cành. Và cặp đôi trẻ của chúng ta cũng không ngoại lệ.',
+        'Kính thưa quan viên hai họ, kính thưa quý vị quan khách! Yêu nhau chẳng quản xa gần, cầu không tay vịn cũng lần mà sang. Yêu nhau chẳng quản lầm than, mấy sông cũng lội, mấy ngàn cũng qua. Yêu nhau chẳng ngại đường xa, đá vàng cũng quyết, phong ba cũng liều.',
+        'Vâng, thưa quý vị! Yêu và được yêu là niềm hạnh phúc lớn lao nhất trong cuộc đời mỗi con người, là món quà quý giá mà cuộc sống ban tặng cho chúng ta.',
+        `Sau thời gian quen biết và tìm hiểu, cô dâu ${bride} và chú rể ${groom} đã cùng nhau tìm được bến bờ hạnh phúc, và đám cưới hôm nay chính là minh chứng cho tình yêu đó.`,
+      ],
+    ],
+    intro: (groom: string, bride: string) =>
+      `Và ngay sau đây, xin một tràng pháo tay thật nồng nhiệt để chào đón nhân vật chính được mong chờ nhất hôm nay: chú rể ${groom} và cô dâu ${bride}! | ^^Hoan hô!`,
+    ring: 'Chiếc nhẫn cưới không chỉ là một tín vật đơn thuần. Nó là vòng tròn của sự vĩnh cửu, không có điểm đầu cũng chẳng có điểm kết thúc, tượng trưng cho tình yêu bền chặt mà hai bạn dành cho nhau.',
+    ringGive: 'Xin mời cô dâu và chú rể trao cho nhau tín vật yêu thương này! | ^^Hoan hô!',
+    thanks: 'Thay mặt gia đình hai bên, xin chân thành cảm ơn sự hiện diện, những món quà và những lời chúc tốt đẹp mà quý vị đã dành cho đôi uyên ương.',
+    invite: 'Xin kính chúc toàn thể quý vị khách quý có một bữa tiệc thật ngon miệng và ấm cúng. Xin trân trọng kính mời! | ^^Dô!',
+  },
+
   // ---------- MC nói liên tục khi rảnh ----------
   chatterQuietMs: 4000, // giọng im 4 giây là MC nói tiếp
   chatter: {
@@ -145,6 +178,21 @@ export const GAME = {
       'Thả tim cho đủ ba trăm, cả rạp lên đèn quẩy luôn nha!',
       'Cô dâu hôm nay xinh quá trời! Mọi người thả tim cho cô dâu chú rể đi nào!',
       'Gõ dô để ngồi vào bàn nâng ly, gõ quẩy để ra sàn nhảy nha!',
+    ],
+    // Bộ câu kéo comment: hỏi nhanh, chọn số, hô theo
+    hype: [
+      'Ai thấy cô dâu xinh comment số một, ai thấy chú rể đẹp trai comment số hai! Xem bên nào thắng nào!',
+      'Cả rạp comment chữ dô cho MC nghe coi! Một, hai, ba | ^^Dô!',
+      'Ai đang ăn cơm mà vẫn xem live đám cưới thì comment chữ ăn nha, MC biết hết đó!',
+      'Ai đi ăn cưới mà toàn ngồi bàn cuối gần bếp giống MC thì comment một nụ cười coi!',
+      'Ai muốn năm nay lấy vợ lấy chồng comment chữ cưới! MC ghi tên, lần sau rạp này là của bạn!',
+      'Hỏi nhanh đáp gọn: phong bì đám cưới bao nhiêu là vừa? Comment số cho MC xem nào!',
+      'Ai đang xem một mình buồn quá thì vô rạp ngồi chung bàn với mọi người nè, comment một câu thôi!',
+      'Bàn nào hô to nhất? Gõ dô liên tục cho MC thấy nào! | ^Dô! Dô! Dô!',
+      'Ai từng đi đám cưới mà bị hỏi khi nào cưới thì comment chữ rồi nha, MC thương!',
+      'Thả tim đi mọi người, đủ ba trăm tim là cả rạp lên đèn quẩy luôn!',
+      'Ai thích nhạc đám cưới quê thì comment chữ thích nha!',
+      'Cô dâu chú rể đang đi chào từng bàn, bàn nào muốn được ghé thì gõ dô thật nhiều vào!',
     ],
   },
 

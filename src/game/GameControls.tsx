@@ -90,6 +90,7 @@ export function GameControls() {
         >
           💒 Bầu chú rể + cô dâu (có phiếu giả)
         </B>
+        <B onClick={() => void sendControl('custom', 'ceremony')}>🎤 Khai mạc lễ cưới (MC đọc lời dẫn)</B>
         <B onClick={() => void sendControl('custom', 'clearCouple')}>✖ Xoá tên cô dâu chú rể</B>
         <B onClick={() => void sendControl('custom', 'music')}>🎵 Bật/tắt nhạc nền (trên stage)</B>
         <B onClick={() => testVoice()}>🔊 Thử giọng MC (chỉ trang này nghe)</B>

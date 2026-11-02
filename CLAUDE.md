@@ -41,4 +41,6 @@
 - Khách: 4/10 người tóc nhuộm (đỏ, cam, vàng, trắng, hồng), đồ có vest, chấm bi, kẻ sọc, kính, nơ.
 - Long phượng sum vầy: trên phông cưới và biển Vu Quy; quà từ 999 xu thì rồng phượng bay ngang trời.
 - Nhạc nền: `public/assets/audio/nhac-nen-dam-cuoi.m4a` (chủ kênh đưa, không đưa lên git), chỉ trang stage phát, MC nói thì nhạc tự nhỏ xuống (`src/game/music.ts`).
+- Người lướt vào live: MC đọc tên + mời vào ăn cưới (`GAME.greetings`). Có thêm bộ câu kéo comment `GAME.chatter.hype`.
+- Khai mạc lễ cưới (`GAME.ceremony`, lời dẫn của chủ kênh, 2 bản đổi lượt): chạy sau khi bầu xong cô dâu, hoặc nút "Khai mạc". Đọc xong lời mở đầu thì cô dâu chú rể đi thảm đỏ từ cổng lên sân khấu, rồi trao nhẫn (nhẫn vàng bay lên), cảm ơn, mời tiệc. Câu khai mạc dùng `keep` nên không bị bỏ dù chờ lâu.
 - Nền đang vẽ bằng code. Chủ kênh có thể làm ảnh rạp cưới trống (không người) 1080x1920 để thay.

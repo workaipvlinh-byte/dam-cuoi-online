@@ -85,6 +85,8 @@ export function useGame() {
       bouquet: null as null | Set<string>,
       poll: null as null | { role: 'groom' | 'bride'; votes: Map<string, { name: string; count: number }>; voted: Set<string>; until: number },
       polledOnce: false,
+      ceremony: false,
+      ceremonyNo: 0,
       usedChuc: [] as number[],
       cardKey: 0,
     };
@@ -144,6 +146,42 @@ export function useGame() {
       world.coupleDance(5000);
     } else voice.say(GAME.pollNone(roleName));
     if (p.role === 'groom') setTimeout(() => startPoll('bride'), 5000);
+    else setTimeout(() => startCeremony(), 6000);
+  };
+
+  // ---------- khai mạc: MC đọc lời dẫn, cô dâu chú rể đi thảm đỏ lên sân khấu ----------
+  const startCeremony = () => {
+    if (s.ceremony) return;
+    s.ceremony = true;
+    const C = GAME.ceremony;
+    const g = s.couple.groom ? speakableName(s.couple.groom) : '';
+    const b = s.couple.bride ? speakableName(s.couple.bride) : '';
+    const lines = C.openings[s.ceremonyNo++ % C.openings.length](g || 'chú rể', b || 'cô dâu');
+    // đọc xong lời mở đầu thì cô dâu chú rể bắt đầu đi từ cổng hoa
+    const keep = true; // lời dẫn dài, không bỏ câu nào
+    lines.forEach((l, i) => voice.say(l, false, i === lines.length - 1 ? () => world.coupleEntrance() : undefined, keep));
+    voice.say(
+      C.intro(g || 'của chúng ta', b || 'xinh đẹp'),
+      false,
+      () => {
+        world.confetti(140);
+        world.fireworks(5);
+      },
+      keep,
+    );
+    voice.say(C.ring, false, undefined, keep);
+    voice.say(C.ringGive, false, () => world.ringExchange(), keep);
+    voice.say(C.thanks, false, undefined, keep);
+    voice.say(
+      C.invite,
+      false,
+      () => {
+        world.partyAll(10000);
+        world.confetti(100);
+        s.ceremony = false;
+      },
+      keep,
+    );
   };
 
   // Thế giới (canvas) báo ngược về: bưng mâm xong, tới lượt chụp, bắt được hoa, cô dâu chú rể chào bàn
@@ -334,6 +372,7 @@ export function useGame() {
       if (c.action === 'setName' && c.text) setChannelName(c.text);
       if (c.action === 'custom' && c.text === 'bouquet') startBouquet();
       if (c.action === 'custom' && c.text === 'poll') startPoll('groom');
+      if (c.action === 'custom' && c.text === 'ceremony') startCeremony();
       if (c.action === 'custom' && c.text === 'clearCouple') applyCouple({ groom: '', bride: '' });
       if (!IS_STAGE) return; // chỉ trang stage làm theo lệnh có tiếng, tránh 2 giọng
       if (c.action === 'speak' && c.text) voice.say(c.text, true);
@@ -370,7 +409,8 @@ export function useGame() {
       () => (world.coupleMingling ? C.mingle(cap(ct)) : null),
       () => (world.queueLength >= 2 ? C.queue(world.queueLength) : null),
       () => pick(C.questions) ?? null,
-      () => pick(C.questions) ?? null,
+      () => pick(C.hype) ?? null,
+      () => pick(C.hype) ?? null,
     ];
     for (let i = 0; i < 5; i++) {
       const line = opts[Math.floor(Math.random() * opts.length)]();
@@ -394,7 +434,7 @@ export function useGame() {
       );
       timers.push(
         setInterval(() => {
-          if (s.poll || voice.quietForMs() < GAME.chatterQuietMs) return;
+          if (s.poll || s.ceremony || voice.quietForMs() < GAME.chatterQuietMs) return;
           const line = chatterLine();
           if (line) voice.say(line);
         }, 2000),

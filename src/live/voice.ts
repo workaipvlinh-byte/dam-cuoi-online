@@ -12,6 +12,7 @@ interface Line {
   text: string;
   at: number;
   done?: () => void;
+  keep?: boolean; // không bỏ dù chờ lâu (lời dẫn khai mạc dài)
 }
 
 const MAX_WAIT_MS = 60_000;
@@ -28,13 +29,13 @@ class Voice {
   enabled = IS_STAGE;
 
   /** `done`: gọi khi câu đọc xong, bị bỏ, hoặc trang này không phát tiếng */
-  say(text: string, priority = false, done?: () => void) {
+  say(text: string, priority = false, done?: () => void, keep = false) {
     if (!this.enabled || !text.trim()) {
       if (done) setTimeout(done, 0);
       return;
     }
     const q = priority ? this.priority : this.normal;
-    q.push({ text: text.trim(), at: Date.now(), done });
+    q.push({ text: text.trim(), at: Date.now(), done, keep });
     if (q.length > MAX_QUEUE) q.shift()?.done?.();
     void this.next();
   }
@@ -72,7 +73,7 @@ class Voice {
     const now = Date.now();
     let line: Line | undefined;
     while ((line = this.priority.shift() ?? this.normal.shift())) {
-      if (now - line.at < MAX_WAIT_MS) break;
+      if (line.keep || now - line.at < MAX_WAIT_MS) break;
       line.done?.();
     }
     if (!line) return;
