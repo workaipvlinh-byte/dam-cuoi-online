@@ -6,6 +6,9 @@
 
 import type { WishTopic } from '../live/chatter';
 
+// Câu hô cụng ly chung, dùng ở mọi chỗ MC hô dô
+const CHANT = 'Một, hai, ba, dô! Hai, ba, dô! Hai, ba, dô! Hai, ba, uống! Uống cạn ly!';
+
 export const GAME = {
   title: 'Đám Cưới Online',
   defaultChannelName: 'nhà mình',
@@ -112,8 +115,8 @@ export const GAME = {
   needTray: (name: string, left: number) => `Bạn ${name} ơi, bưng thêm ${left} mâm nữa là được lên chụp hình với cô dâu chú rể nha!`,
   queueFull: 'Hàng chụp hình đang dài quá trời, mọi người bưng mâm, cụng ly chờ chút nha!',
   partyLine: 'Sàn nhảy nóng quá rồi! Ai chưa quẩy thì gõ quẩy vô luôn nha! | ^Quẩy lên!',
-  boostLine: 'Đủ tim rồi! Cả rạp lên đèn, đứng dậy quẩy nào! Một, hai, ba, dô!',
-  coupleGreet: (couple: string, name: string) => `${couple} tới chào bạn ${name} nè! Nâng ly nào! Dô!`,
+  boostLine: `Đủ tim rồi! Cả rạp lên đèn, nâng ly nào! ${CHANT}`,
+  coupleGreet: (couple: string, name: string) => `${couple} tới chào bạn ${name} nè! Nâng ly nào! ${CHANT}`,
 
   bouquetCall: 'Sắp tung hoa cưới rồi! Ai muốn bắt hoa thì gõ bắt hoa, nhanh lên nào!',
   bouquetThrow: 'Cô dâu quay lưng rồi, chuẩn bị nha! Một, hai, ba!',
@@ -156,7 +159,7 @@ export const GAME = {
     ring: 'Chiếc nhẫn cưới không chỉ là một tín vật đơn thuần. Nó là vòng tròn của sự vĩnh cửu, không có điểm đầu cũng chẳng có điểm kết thúc, tượng trưng cho tình yêu bền chặt mà hai bạn dành cho nhau.',
     ringGive: 'Xin mời cô dâu và chú rể trao cho nhau tín vật yêu thương này! | ^Hoan hô!',
     thanks: 'Thay mặt gia đình hai bên, xin chân thành cảm ơn sự hiện diện, những món quà và những lời chúc tốt đẹp mà quý vị đã dành cho đôi uyên ương.',
-    invite: 'Xin kính chúc toàn thể quý vị khách quý có một bữa tiệc thật ngon miệng và ấm cúng. Xin trân trọng kính mời! Dô!',
+    invite: `Xin kính chúc toàn thể quý vị khách quý có một bữa tiệc thật ngon miệng và ấm cúng. Xin trân trọng kính mời! ${CHANT}`,
   },
 
   // ---------- MC nói liên tục khi rảnh ----------
@@ -182,13 +185,13 @@ export const GAME = {
     // Bộ câu kéo comment: hỏi nhanh, chọn số, hô theo
     hype: [
       'Ai thấy cô dâu xinh comment số một, ai thấy chú rể đẹp trai comment số hai! Xem bên nào thắng nào!',
-      'Cả rạp comment chữ dô cho MC nghe coi! Một, hai, ba, dô!',
+      `Cả rạp comment chữ dô cho MC nghe coi! ${CHANT}`,
       'Ai đang ăn cơm mà vẫn xem live đám cưới thì comment chữ ăn nha, MC biết hết đó!',
       'Ai đi ăn cưới mà toàn ngồi bàn cuối gần bếp giống MC thì comment một nụ cười coi!',
       'Ai muốn năm nay lấy vợ lấy chồng comment chữ cưới! MC ghi tên, lần sau rạp này là của bạn!',
       'Hỏi nhanh đáp gọn: phong bì đám cưới bao nhiêu là vừa? Comment số cho MC xem nào!',
       'Ai đang xem một mình buồn quá thì vô rạp ngồi chung bàn với mọi người nè, comment một câu thôi!',
-      'Bàn nào hô to nhất? Gõ dô liên tục cho MC thấy nào! Dô, dô, dô!',
+      `Bàn nào hô to nhất? Gõ dô liên tục cho MC thấy nào! ${CHANT}`,
       'Ai từng đi đám cưới mà bị hỏi khi nào cưới thì comment chữ rồi nha, MC thương!',
       'Thả tim đi mọi người, đủ ba trăm tim là cả rạp lên đèn quẩy luôn!',
       'Ai thích nhạc đám cưới quê thì comment chữ thích nha!',
