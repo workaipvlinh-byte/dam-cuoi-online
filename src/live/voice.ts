@@ -88,9 +88,25 @@ class Voice {
         audio.volume = this.volume;
         this.current = audio;
         await new Promise<void>((resolve) => {
-          audio.onended = () => resolve();
-          audio.onerror = () => resolve();
-          audio.play().catch(() => resolve());
+          // Tự gỡ kẹt: 1 câu treo (không tải xong, không báo lỗi) sẽ làm MC im cả buổi live.
+          // Chưa phát được sau 8 giây thì bỏ câu; đang phát thì cắt khi quá độ dài câu + 4 giây.
+          let guard = setTimeout(finish, 8000);
+          function finish() {
+            clearTimeout(guard);
+            if (!audio.ended) audio.pause();
+            resolve();
+          }
+          audio.onplaying = () => {
+            clearTimeout(guard);
+            const ms = Number.isFinite(audio.duration) ? audio.duration * 1000 + 4000 : 40_000;
+            guard = setTimeout(finish, ms);
+          };
+          audio.onended = finish;
+          audio.onerror = finish;
+          // trình duyệt chặn tự phát tiếng: thử lại vài lần thay vì bỏ câu
+          const tryPlay = (left: number) =>
+            audio.play().catch(() => (left > 0 ? setTimeout(() => tryPlay(left - 1), 1500) : finish()));
+          tryPlay(4);
         });
         if (this.current !== audio) break; // stop() giữa chừng
       }
