@@ -110,11 +110,10 @@ const SAMPLES = [
 ];
 let sample = 0;
 async function testVoice() {
-  // cùng cách đọc với stage: "|" tách đoạn, "^" hô, "^^" hô kéo dài
+  // cùng cách đọc với stage: "|" tách đoạn, "^" hô to hơn
   for (const raw of SAMPLES[sample++ % SAMPLES.length].split('|')) {
     const t = raw.trim();
     const a = new Audio(`/api/tts?rate=1.1${t.startsWith('^') ? '&hype=1' : ''}&text=${encodeURIComponent(t.replace(/^\^+/, ''))}`);
-    if (t.startsWith('^^')) a.playbackRate = 0.6;
     await new Promise<void>((r) => {
       a.onended = a.onerror = () => r();
       a.play().catch(() => r());

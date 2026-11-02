@@ -46,34 +46,34 @@ export const GAME = {
   // ---------- Quà theo cấp (xu của 1 lần tặng) ----------
   // fx: confetti, balloon, envelopes (phong bì rơi), fireworks, couple (cô dâu chú rể nhảy),
   //     car (xe hoa), longphuong (rồng phượng bay), gold (mưa kim tuyến), party (cả rạp lên đèn nhảy)
-  // Câu hô: "|" tách đoạn, "^" hô cao giọng, "^^" hô cao + kéo dài.
+  // Câu hô: "|" tách đoạn, "^" hô cao giọng, "^" hô cao + kéo dài.
   giftTiers: [
     {
       min: 4999,
       fx: ['longphuong', 'car', 'fireworks', 'gold', 'envelopes', 'party', 'couple'],
-      lines: [(n: string) => `^^Trời ơi tin được không! | Bạn ${n} là đại gia của đám cưới hôm nay! Ban nhạc nổi nhạc lên, cả rạp đứng dậy nào! | ^^Hoan hô!`],
+      lines: [(n: string) => `^Trời ơi tin được không! | Bạn ${n} là đại gia của đám cưới hôm nay! Ban nhạc nổi nhạc lên, cả rạp đứng dậy nào! | ^Hoan hô!`],
     },
     {
       min: 999,
       fx: ['longphuong', 'fireworks', 'gold', 'party', 'couple'],
       lines: [
-        (n: string) => `^^Ối dồi ôi! | Long phượng sum vầy! Bạn ${n} làm cả rạp sáng rực luôn! | ^^Đỉnh của chóp!`,
-        (n: string) => `^^Trời đất quỷ thần ơi! | Bạn ${n} vừa làm cô dâu chú rể khóc vì cảm động luôn rồi! | ^^Hoan hô!`,
+        (n: string) => `^Ối dồi ôi! | Long phượng sum vầy! Bạn ${n} làm cả rạp sáng rực luôn! | ^Đỉnh của chóp!`,
+        (n: string) => `^Trời đất quỷ thần ơi! | Bạn ${n} vừa làm cô dâu chú rể khóc vì cảm động luôn rồi! | ^Hoan hô!`,
       ],
     },
     {
       min: 299,
       fx: ['car', 'fireworks', 'envelopes', 'couple'],
       lines: [
-        (n: string) => `^Ối giời ơi! | Xe hoa của bạn ${n} tới rồi kìa! Khách VIP của rạp hôm nay đây rồi! | ^^Quá đỉnh!`,
-        (n: string) => `Bạn ${n} ơi, tháng này ăn mì tôm cũng đáng nha! Cô dâu chú rể cảm ơn bạn nhiều lắm! | ^^Hoan hô!`,
+        (n: string) => `^Ối giời ơi! | Xe hoa của bạn ${n} tới rồi kìa! Khách VIP của rạp hôm nay đây rồi! | ^Quá đỉnh!`,
+        (n: string) => `Bạn ${n} ơi, tháng này ăn mì tôm cũng đáng nha! Cô dâu chú rể cảm ơn bạn nhiều lắm! | ^Hoan hô!`,
       ],
     },
     {
       min: 99,
       fx: ['fireworks', 'balloon', 'couple'],
       lines: [
-        (n: string) => `^Trời đất ơi! | Bạn ${n} chơi lớn quá! Cả rạp cho một tràng pháo tay nào! | ^^Hoan hô!`,
+        (n: string) => `^Trời đất ơi! | Bạn ${n} chơi lớn quá! Cả rạp cho một tràng pháo tay nào! | ^Hoan hô!`,
         (n: string) => `Ví của bạn ${n} vừa mỏng đi một chút, mà tình cảm thì dày lên rồi! | ^Cảm ơn bạn!`,
       ],
     },
@@ -112,12 +112,12 @@ export const GAME = {
   needTray: (name: string, left: number) => `Bạn ${name} ơi, bưng thêm ${left} mâm nữa là được lên chụp hình với cô dâu chú rể nha!`,
   queueFull: 'Hàng chụp hình đang dài quá trời, mọi người bưng mâm, cụng ly chờ chút nha!',
   partyLine: 'Sàn nhảy nóng quá rồi! Ai chưa quẩy thì gõ quẩy vô luôn nha! | ^Quẩy lên!',
-  boostLine: 'Đủ tim rồi! Cả rạp lên đèn, đứng dậy quẩy nào! Một, hai, ba | ^^Dô!',
-  coupleGreet: (couple: string, name: string) => `${couple} tới chào bạn ${name} nè! Nâng ly nào! | ^^Dô!`,
+  boostLine: 'Đủ tim rồi! Cả rạp lên đèn, đứng dậy quẩy nào! Một, hai, ba, dô!',
+  coupleGreet: (couple: string, name: string) => `${couple} tới chào bạn ${name} nè! Nâng ly nào! Dô!`,
 
   bouquetCall: 'Sắp tung hoa cưới rồi! Ai muốn bắt hoa thì gõ bắt hoa, nhanh lên nào!',
   bouquetThrow: 'Cô dâu quay lưng rồi, chuẩn bị nha! Một, hai, ba!',
-  bouquetCaught: (name: string) => `Bạn ${name} bắt được hoa cưới rồi! | ^^Hoan hô! | Chúc bạn sớm có tin vui nha!`,
+  bouquetCaught: (name: string) => `Bạn ${name} bắt được hoa cưới rồi! | ^Hoan hô! | Chúc bạn sớm có tin vui nha!`,
   bouquetNobody: 'Chưa ai gõ bắt hoa hết, lát nữa cô dâu tung lại nha!',
 
   // ---------- Bầu tên chú rể, cô dâu từ comment ----------
@@ -127,7 +127,7 @@ export const GAME = {
     groom: 'Mọi người ơi, đám cưới hôm nay chưa có chú rể! Muốn ai làm chú rể thì comment tên người đó vào nha!',
     bride: 'Giờ tới cô dâu! Muốn ai làm cô dâu thì comment tên vào nha, nhanh tay lên!',
   },
-  pollWin: (role: string, name: string) => `Chốt rồi! ${role} hôm nay là ${name}! | ^^Hoan hô!`,
+  pollWin: (role: string, name: string) => `Chốt rồi! ${role} hôm nay là ${name}! | ^Hoan hô!`,
   pollNone: (role: string) => `Chưa ai bầu ${role} hết, thôi giữ bí mật nha!`,
 
   // ---------- Khai mạc lễ cưới (lời dẫn của chủ kênh) ----------
@@ -152,11 +152,11 @@ export const GAME = {
       ],
     ],
     intro: (groom: string, bride: string) =>
-      `Và ngay sau đây, xin một tràng pháo tay thật nồng nhiệt để chào đón nhân vật chính được mong chờ nhất hôm nay: chú rể ${groom} và cô dâu ${bride}! | ^^Hoan hô!`,
+      `Và ngay sau đây, xin một tràng pháo tay thật nồng nhiệt để chào đón nhân vật chính được mong chờ nhất hôm nay: chú rể ${groom} và cô dâu ${bride}! | ^Hoan hô!`,
     ring: 'Chiếc nhẫn cưới không chỉ là một tín vật đơn thuần. Nó là vòng tròn của sự vĩnh cửu, không có điểm đầu cũng chẳng có điểm kết thúc, tượng trưng cho tình yêu bền chặt mà hai bạn dành cho nhau.',
-    ringGive: 'Xin mời cô dâu và chú rể trao cho nhau tín vật yêu thương này! | ^^Hoan hô!',
+    ringGive: 'Xin mời cô dâu và chú rể trao cho nhau tín vật yêu thương này! | ^Hoan hô!',
     thanks: 'Thay mặt gia đình hai bên, xin chân thành cảm ơn sự hiện diện, những món quà và những lời chúc tốt đẹp mà quý vị đã dành cho đôi uyên ương.',
-    invite: 'Xin kính chúc toàn thể quý vị khách quý có một bữa tiệc thật ngon miệng và ấm cúng. Xin trân trọng kính mời! | ^^Dô!',
+    invite: 'Xin kính chúc toàn thể quý vị khách quý có một bữa tiệc thật ngon miệng và ấm cúng. Xin trân trọng kính mời! Dô!',
   },
 
   // ---------- MC nói liên tục khi rảnh ----------
@@ -182,13 +182,13 @@ export const GAME = {
     // Bộ câu kéo comment: hỏi nhanh, chọn số, hô theo
     hype: [
       'Ai thấy cô dâu xinh comment số một, ai thấy chú rể đẹp trai comment số hai! Xem bên nào thắng nào!',
-      'Cả rạp comment chữ dô cho MC nghe coi! Một, hai, ba | ^^Dô!',
+      'Cả rạp comment chữ dô cho MC nghe coi! Một, hai, ba, dô!',
       'Ai đang ăn cơm mà vẫn xem live đám cưới thì comment chữ ăn nha, MC biết hết đó!',
       'Ai đi ăn cưới mà toàn ngồi bàn cuối gần bếp giống MC thì comment một nụ cười coi!',
       'Ai muốn năm nay lấy vợ lấy chồng comment chữ cưới! MC ghi tên, lần sau rạp này là của bạn!',
       'Hỏi nhanh đáp gọn: phong bì đám cưới bao nhiêu là vừa? Comment số cho MC xem nào!',
       'Ai đang xem một mình buồn quá thì vô rạp ngồi chung bàn với mọi người nè, comment một câu thôi!',
-      'Bàn nào hô to nhất? Gõ dô liên tục cho MC thấy nào! | ^Dô! Dô! Dô!',
+      'Bàn nào hô to nhất? Gõ dô liên tục cho MC thấy nào! Dô, dô, dô!',
       'Ai từng đi đám cưới mà bị hỏi khi nào cưới thì comment chữ rồi nha, MC thương!',
       'Thả tim đi mọi người, đủ ba trăm tim là cả rạp lên đèn quẩy luôn!',
       'Ai thích nhạc đám cưới quê thì comment chữ thích nha!',

@@ -316,15 +316,15 @@ function splitText(text: string, max = 190): string[] {
   return chunks;
 }
 
-// hype = câu hô của MC ("Dô!", "Ối dồi ôi!"): cao giọng, to hơn
+// hype = câu hô của MC ("Hoan hô!", "Ối dồi ôi!"): chỉ to hơn, giữ nguyên cao độ (đổi cao độ nghe như người khác nói)
 async function edgeTts(text: string, rate: number, hype = false): Promise<Buffer> {
   const tts = new MsEdgeTTS();
   try {
     await tts.setMetadata(TTS_VOICE, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
     const { audioStream } = tts.toStream(escapeXml(text), {
       rate: `${rate >= 1 ? '+' : ''}${Math.round((rate - 1) * 100)}%`,
-      pitch: hype ? '+35%' : TTS_PITCH,
-      volume: hype ? '+50%' : '+0%',
+      pitch: TTS_PITCH,
+      volume: hype ? '+40%' : '+0%',
     });
     const chunks: Buffer[] = [];
     const read = (async () => {
