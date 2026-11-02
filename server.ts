@@ -391,7 +391,12 @@ async function start() {
     const { createServer } = await import('vite');
     const vite = await createServer({
       // LIVE_MODE=1 (BAT-LIVE.bat): tắt tự tải lại, sửa code không làm trang stage reset giữa live
-      server: { middlewareMode: true, hmr: process.env.LIVE_MODE === '1' ? false : undefined },
+      // Live: tắt hẳn kênh tự tải lại (ws) để không đụng cổng 24678 của game khác đang chạy.
+      // Lúc sửa code: dùng cổng riêng 24680 cho kênh tự tải lại, game khác (Đi Chùa) giữ 24678.
+      server:
+        process.env.LIVE_MODE === '1'
+          ? { middlewareMode: true, hmr: false, ws: false }
+          : { middlewareMode: true, hmr: { port: 24680 } },
       appType: 'spa',
     });
     app.use(vite.middlewares);
