@@ -1,5 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { emitTest, sendControl } from '../live/page';
+import { GAME } from './config';
+import { QUE } from './loiChuc';
 
 // Nút giả lập riêng của game Đám Cưới (trang điều khiển). Dùng 40 khách cố định để bưng mâm rồi chụp hình được.
 const NAMES = ['Lan Anh', 'Minh Tuấn', 'Bé Na 🌸', 'Hoàng Long', 'Thu Trang', 'Quốc Bảo', 'duyanh99', 'Ngọc Hân', 'Gia Huy', 'Khánh Linh', 'Mai Phương', 'Tuấn Kiệt', 'Hải Yến', 'Đức Anh', 'Phương Thảo', 'Bảo Ngọc', 'Trọng Nhân', 'Thanh Hà', 'Kim Chi', 'Văn Toàn'];
@@ -75,10 +77,24 @@ export function GameControls() {
         <B onClick={() => gift(99, 'Bắn tim')}>🎆 Quà 99 xu</B>
         <B onClick={() => gift(1000, 'Thiên hà')}>💍 Quà 1000 xu</B>
         <B onClick={() => emitTest('like', { ...anyone(), likeCount: 300 })}>❤️ 300 tim (cả rạp dzô)</B>
+        <B onClick={() => testVoice()}>🔊 Thử giọng MC (chỉ trang này nghe)</B>
       </div>
       <p className="mt-2 text-xs text-slate-500">Bưng 2 mâm được chụp lần đầu, sau đó 1 mâm. Tung hoa tự chạy mỗi 10 phút. Số liệu ở src/game/config.ts.</p>
     </section>
   );
+}
+
+// Nghe thử ngay ở trang điều khiển, không gửi sang stage (không thành 2 giọng trên live)
+const SAMPLES = [
+  GAME.thankBigGift('Hoàng Long') + ' ' + GAME.giftWishes[1],
+  GAME.photo('Ngọc Hân', QUE[1].loi),
+  GAME.boostLine,
+  GAME.greetings[0]('bạn Lan Anh, bạn Minh Tuấn và bạn Thu Trang'),
+];
+let sample = 0;
+function testVoice() {
+  const text = SAMPLES[sample++ % SAMPLES.length];
+  void new Audio(`/api/tts?rate=1.1&text=${encodeURIComponent(text)}`).play();
 }
 
 function B({ children, onClick, on }: { children: ReactNode; onClick: () => void; on?: boolean }) {
